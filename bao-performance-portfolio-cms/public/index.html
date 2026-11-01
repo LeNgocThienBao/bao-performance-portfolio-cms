@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f6f4f0">
+<meta name="description" content="Performance Marketing portfolio with campaign strategy, analysis, and creative production.">
+<title>Performance Marketing Portfolio — Lê Ngọc Thiên Bảo</title>
+<style>
+:root{--paper:#f6f4f0;--surface:#fffefa;--ink:#22221f;--muted:#74736e;--line:#dedbd4;--orange:#f06435;--orange-soft:#ffebe2;--dark:#252521;--radius:24px;--max:1180px}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:90px}
+body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.55 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+button,a{-webkit-tap-highlight-color:transparent}
+button:focus-visible,a:focus-visible{outline:3px solid var(--orange);outline-offset:4px}
+::selection{background:var(--orange);color:white}
+.wrap{width:min(var(--max),calc(100% - 48px));margin-inline:auto}
+.topbar{position:sticky;top:0;z-index:20;background:rgba(246,244,240,.88);backdrop-filter:blur(14px);border-bottom:1px solid rgba(34,34,31,.08)}
+.nav{height:76px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+.brand{font-weight:850;letter-spacing:-.06em;font-size:16px;white-space:nowrap}
+.brand-dot{color:var(--orange)}
+.navlinks{display:flex;gap:26px;align-items:center;font-size:12px;color:var(--muted)}
+.navlinks a{transition:color .2s ease}
+.navlinks a:hover{color:var(--orange)}
+.nav-cta{font-size:12px;font-weight:750;border:1px solid var(--ink);border-radius:999px;padding:11px 16px;transition:background .2s,color .2s,transform .2s;white-space:nowrap}
+.nav-cta:hover{background:var(--ink);color:white;transform:translateY(-2px)}
+.hero{padding:clamp(70px,10vw,130px) 0 88px;position:relative;overflow:clip}
+.hero:before{content:"";position:absolute;width:430px;height:430px;right:-100px;top:45px;z-index:-1;border-radius:50%;background:radial-gradient(circle,rgba(240,100,53,.18),rgba(240,100,53,.06) 42%,transparent 70%);filter:blur(12px);animation:ambient 12s ease-in-out infinite alternate}
+.kicker,.eyebrow{font-size:11px;letter-spacing:.15em;text-transform:uppercase;font-weight:800;color:var(--orange)}
+.kicker{display:flex;align-items:center;gap:10px}
+.kicker:before{content:"";width:24px;height:1px;background:var(--orange)}
+.hero h1{font-size:clamp(52px,9.3vw,124px);line-height:.91;letter-spacing:-.085em;font-weight:780;max-width:1000px;margin:28px 0 30px}
+.kinetic-line{display:block;overflow:hidden;padding-bottom:.06em}
+.kinetic-word{display:inline-block;transform:translateY(110%);animation:word-in .9s cubic-bezier(.2,.75,.25,1) forwards}
+.kinetic-line:nth-child(2) .kinetic-word{animation-delay:.12s}
+.accent{color:var(--orange)}
+.hero-bottom{display:grid;grid-template-columns:1.15fr .85fr;gap:42px;align-items:end;margin-top:42px}
+.lead{font-size:clamp(17px,2vw,21px);line-height:1.55;max-width:650px;margin:0;color:#52514c}
+.hero-meta{display:flex;flex-direction:column;gap:9px;justify-self:end;font-size:12px;color:var(--muted);text-align:right}
+.hero-meta strong{color:var(--ink);font-weight:700}
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:28px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:12px;border-radius:999px;padding:13px 18px;font-size:12px;font-weight:800;border:1px solid var(--line);transition:transform .22s ease,background .22s ease,color .22s ease,border-color .22s ease}
+.btn:hover{transform:translateY(-3px)}
+.btn-primary{background:var(--orange);color:white;border-color:var(--orange)}
+.btn-primary:hover{background:#d94f25;border-color:#d94f25}
+.btn-quiet:hover{border-color:var(--ink);background:var(--surface)}
+.arrow{display:inline-block;transition:transform .2s ease}
+.btn:hover .arrow{transform:translate(3px,-2px)}
+.hero-index{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--line);margin-top:74px;padding-top:15px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.hero-index span:last-child{display:flex;align-items:center;gap:8px}
+.pulse{width:7px;height:7px;border-radius:50%;background:var(--orange);box-shadow:0 0 0 4px var(--orange-soft)}
+.section{padding:92px 0}
+.section-white{background:var(--surface)}
+.section-head{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:end;margin-bottom:34px}
+.section-head h2{font-size:clamp(34px,5.3vw,65px);line-height:.98;letter-spacing:-.07em;margin:12px 0 0;max-width:680px}
+.section-head p{color:var(--muted);max-width:470px;justify-self:end;margin:0;font-size:14px}
+.about-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:16px}
+.about-intro{background:var(--dark);color:white;border-radius:var(--radius);padding:clamp(26px,4vw,44px);min-height:310px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden}
+.about-intro:after{content:"";position:absolute;width:260px;height:260px;border-radius:50%;border:1px solid rgba(255,255,255,.12);right:-70px;bottom:-130px;box-shadow:0 0 0 28px rgba(255,255,255,.025),0 0 0 58px rgba(255,255,255,.02)}
+.about-intro h3{font-size:clamp(28px,4vw,44px);line-height:1.04;letter-spacing:-.06em;margin:26px 0;max-width:540px;position:relative;z-index:1}
+.about-intro p{color:#c9c8c0;font-size:14px;max-width:510px;margin:0;position:relative;z-index:1}
+.about-intro .eyebrow{color:#ff9877}
+.skill-stack{display:grid;gap:12px}
+.skill-card{background:#eeece6;border:1px solid #e4e0d8;border-radius:var(--radius);padding:24px;transition:transform .25s ease,background .25s ease}
+.skill-card:hover{transform:translateY(-4px);background:#fff}
+.skill-card:first-child{background:var(--orange-soft);border-color:#f8d5c7}
+.skill-top{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:20px}
+.skill-num{font-size:11px;color:var(--muted);font-weight:800}
+.skill-card h3{font-size:21px;letter-spacing:-.04em;margin:0}
+.skill-card p{font-size:13px;color:var(--muted);margin:0}
+.skill-card .mini-arrow{color:var(--orange);font-size:20px}
+.work-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:16px}
+.work-card{grid-column:span 6;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;transition:transform .3s ease,border-color .3s ease,box-shadow .3s ease}
+.work-card:hover{transform:translateY(-5px);border-color:#c8c1b7;box-shadow:0 18px 40px rgba(40,35,28,.06)}
+.work-card.wide{grid-column:span 7}
+.work-card.narrow{grid-column:span 5}
+.work-visual{min-height:245px;padding:24px;position:relative;overflow:hidden;display:flex;align-items:flex-end;isolation:isolate}
+.visual-orange{background:#f3c4af}
+.visual-cream{background:#e8e4d9}
+.visual-ink{background:#292a26;color:white}
+.visual-lilac{background:#ddd8eb}
+.visual-label{position:absolute;top:18px;left:20px;font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:800;opacity:.72}
+.visual-title{font-size:clamp(29px,4vw,54px);line-height:.92;letter-spacing:-.075em;font-weight:800;max-width:420px;position:relative;z-index:2}
+.visual-orb{position:absolute;width:210px;height:210px;right:-30px;top:28px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#ff9b73,#ef6336 55%,#c74622);box-shadow:inset -18px -20px 35px rgba(123,35,10,.12);transition:transform .6s cubic-bezier(.2,.7,.2,1)}
+.work-card:hover .visual-orb{transform:scale(1.12) rotate(12deg)}
+.visual-bars{display:flex;align-items:end;gap:8px;height:110px;position:absolute;right:28px;bottom:24px;opacity:.85}
+.visual-bars span{display:block;width:18px;border-radius:8px 8px 0 0;background:var(--orange)}
+.visual-bars span:nth-child(1){height:35%}.visual-bars span:nth-child(2){height:55%}.visual-bars span:nth-child(3){height:42%}.visual-bars span:nth-child(4){height:78%}.visual-bars span:nth-child(5){height:100%}
+.visual-ring{position:absolute;width:190px;height:190px;border:28px solid rgba(240,100,53,.8);border-radius:50%;right:24px;top:22px;box-shadow:0 0 0 1px rgba(255,255,255,.5)}
+.visual-squares{position:absolute;right:28px;top:48px;display:grid;grid-template-columns:repeat(3,44px);gap:8px;transform:rotate(-8deg)}
+.visual-squares span{height:44px;border-radius:10px;background:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.8)}
+.visual-squares span:nth-child(2),.visual-squares span:nth-child(4){background:var(--orange)}
+.work-info{padding:23px 24px 25px}
+.work-meta{display:flex;justify-content:space-between;gap:12px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+.work-info h3{font-size:23px;line-height:1.1;letter-spacing:-.05em;margin:0 0 10px}
+.work-info p{font-size:13px;color:var(--muted);margin:0;max-width:540px}
+.work-foot{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:20px;padding-top:14px;border-top:1px solid var(--line);font-size:11px;color:var(--muted)}
+.work-foot strong{color:var(--ink)}
+.work-foot a{color:var(--orange);font-weight:750;font-size:11px}.work-visual .project-image{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0}.work-visual.has-image:after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.48),transparent 65%);z-index:1}
+.case-note{margin-top:18px;padding:15px 18px;border-left:3px solid var(--orange);background:var(--orange-soft);font-size:12px;color:#6d493c;border-radius:0 12px 12px 0}
+.process-grid{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.process-step{padding:24px 20px 26px 0;position:relative}
+.process-step+.process-step{padding-left:20px;border-left:1px solid var(--line)}
+.process-step .step-no{font-size:11px;color:var(--orange);font-weight:850;letter-spacing:.12em}
+.process-step h3{font-size:19px;letter-spacing:-.04em;margin:26px 0 8px}
+.process-step p{font-size:12px;color:var(--muted);margin:0;max-width:220px}
+.tools-layout{display:grid;grid-template-columns:.75fr 1.25fr;gap:50px;align-items:start}
+.tools-layout h2{font-size:clamp(34px,5vw,58px);line-height:.98;letter-spacing:-.07em;margin:12px 0}
+.tools-layout p{color:var(--muted);font-size:14px}
+.tool-cloud{display:flex;flex-wrap:wrap;gap:9px}
+.tool{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:11px 15px;font-size:12px;transition:transform .2s ease,border-color .2s ease,color .2s ease}
+.tool:hover{transform:translateY(-3px);border-color:var(--orange);color:var(--orange)}
+.contact-panel{background:var(--dark);color:white;border-radius:30px;padding:clamp(28px,5vw,58px);display:grid;grid-template-columns:1fr auto;gap:32px;align-items:end;position:relative;overflow:hidden}
+.contact-panel:after{content:"";position:absolute;width:340px;height:340px;border-radius:50%;right:10%;top:-230px;background:radial-gradient(circle,rgba(240,100,53,.36),transparent 70%);pointer-events:none}
+.contact-panel h2{font-size:clamp(38px,6vw,72px);line-height:.94;letter-spacing:-.075em;margin:15px 0 18px;max-width:720px;position:relative;z-index:1}
+.contact-panel p{color:#c9c8c0;font-size:14px;max-width:500px;position:relative;z-index:1}
+.contact-details{position:relative;z-index:1;min-width:210px}
+.contact-details p{font-size:12px;margin:8px 0;overflow-wrap:anywhere}
+.contact-details .btn{margin-top:14px}
+.footer{display:flex;justify-content:space-between;gap:20px;padding:25px 0 35px;color:var(--muted);font-size:10px}
+.footer span:last-child{text-align:right}
+.reveal{opacity:0;transform:translateY(24px);transition:opacity .7s ease,transform .7s cubic-bezier(.2,.7,.2,1)}
+.reveal.is-visible{opacity:1;transform:translateY(0)}
+.mask-reveal{clip-path:inset(0 0 100% 0);transition:clip-path .9s cubic-bezier(.2,.7,.2,1)}
+.mask-reveal.is-visible{clip-path:inset(0 0 0 0)}
+.delay-1{transition-delay:.08s}.delay-2{transition-delay:.16s}.delay-3{transition-delay:.24s}
+@keyframes word-in{to{transform:translateY(0)}}
+@keyframes ambient{from{transform:translate3d(0,0,0) scale(1)}to{transform:translate3d(-24px,28px,0) scale(1.08)}}
+@media(max-width:800px){
+ .wrap{width:min(var(--max),calc(100% - 32px))}
+ .nav{height:66px}.navlinks{display:none}
+ .hero{padding:72px 0 60px}.hero h1{font-size:clamp(48px,12.8vw,88px)}
+ .hero-bottom{grid-template-columns:1fr;gap:22px;margin-top:28px}
+ .hero-meta{justify-self:start;text-align:left}
+ .hero-index{margin-top:48px}
+ .section{padding:68px 0}
+ .section-head{grid-template-columns:1fr;gap:16px}
+ .section-head p{justify-self:start}
+ .about-grid{grid-template-columns:1fr}
+ .about-intro{min-height:270px}
+ .work-card,.work-card.wide,.work-card.narrow{grid-column:span 12}
+ .work-visual{min-height:220px}
+ .process-grid{grid-template-columns:1fr 1fr}
+ .process-step{padding:22px 14px 24px 0}
+ .process-step+.process-step{padding-left:14px}
+ .process-step:nth-child(3){padding-left:0;border-left:0;border-top:1px solid var(--line)}
+ .process-step:nth-child(4){border-top:1px solid var(--line)}
+ .tools-layout{grid-template-columns:1fr;gap:20px}
+ .contact-panel{grid-template-columns:1fr;gap:10px}
+ .contact-details{min-width:0}
+}
+@media(max-width:420px){
+ .wrap{width:calc(100% - 28px)}
+ .nav-cta{padding:10px 12px;font-size:11px}
+ .hero h1{font-size:clamp(44px,13vw,60px)}
+ .btn{padding:12px 14px}
+ .work-info{padding:20px}
+ .work-visual{min-height:200px}
+ .visual-orb{width:155px;height:155px;right:-25px}
+ .visual-title{font-size:34px}
+ .process-grid{grid-template-columns:1fr}
+ .process-step,.process-step+.process-step,.process-step:nth-child(3){padding:20px 0;border-left:0;border-top:1px solid var(--line)}
+ .process-step:first-child{border-top:0}
+ .process-step h3{margin:13px 0 6px}
+ .footer{display:block}.footer span{display:block}.footer span:last-child{text-align:left;margin-top:8px}
+}
+@media(prefers-reduced-motion:reduce){
+ html{scroll-behavior:auto}
+ *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+ .reveal{opacity:1;transform:none}
+ .mask-reveal{clip-path:none}
+}
+</style>
+</head>
+<body>
+<div class="topbar">
+<header class="wrap nav">
+<a class="brand" href="#top" aria-label="Back to top"><span id="brandName">LÊ NGỌC THIÊN BẢO</span><span class="brand-dot">.</span></a>
+<nav class="navlinks" aria-label="Main navigation"><a href="#about">About</a><a href="#work">Selected work</a><a href="#process">Approach</a><a href="#tools">Tools</a></nav>
+<a class="nav-cta" href="#contact">Let’s connect <span class="arrow">↗</span></a>
+</header>
+</div>
+<main id="top">
+<section class="wrap hero">
+<div class="kicker" id="heroKicker">Performance Marketing · Creative Production</div>
+<h1 aria-label="Performance first. Creative by instinct."><span class="kinetic-line"><span class="kinetic-word">Performance</span></span><span class="kinetic-line"><span class="kinetic-word">first<span class="accent">.</span> Creative</span></span><span class="kinetic-line"><span class="kinetic-word">by instinct<span class="accent">.</span></span></span></h1>
+<div class="hero-bottom">
+<div><p class="lead"><span id="heroLead">I work across campaign execution, performance analysis and creative production — connecting campaign data with the message and visuals people see.</span></p><div class="actions"><a class="btn btn-primary" href="#work">Explore selected work <span class="arrow">↘</span></a><a class="btn btn-quiet" href="#about">A little about me <span class="arrow">↗</span></a></div></div>
+<div class="hero-meta"><span><strong id="jobTitle">Digital Marketing Specialist</strong></span><span><span id="experienceMeta">DONG TAY LAND · Since 06/2024</span></span><span><span id="locationMeta">Vietnam · Real estate marketing</span></span></div>
+</div>
+<div class="hero-index"><span>Portfolio / 2026</span><span><i class="pulse"></i> Open to meaningful opportunities</span></div>
+</section>
+
+<section class="section section-white" id="about">
+<div class="wrap">
+<div class="section-head reveal"><div><div class="eyebrow">01 / Profile</div><h2>Performance is more than launching an ad.</h2></div><p>My core focus is Performance Marketing: campaign setup, monitoring, analysis and optimization. Creative Production is a supporting strength that helps connect campaign strategy with the assets that go live.</p></div>
+<div class="about-grid">
+<article class="about-intro reveal mask-reveal"><div><div class="eyebrow">The way I think</div><h3>Understand the goal.<br>Read the signal.<br><span style="color:#ff9877">Make the next move.</span></h3></div><p>Experienced in the real-estate marketing environment, connecting audience, product offer, creative angle, campaign data and lead quality to practical optimization decisions.</p></article>
+<div class="skill-stack">
+<article class="skill-card reveal delay-1"><div class="skill-top"><h3>Performance Marketing</h3><span class="skill-num">01</span></div><p>Meta, Google, TikTok and Microsoft campaign setup · Lead generation · Audience and creative testing · Budget and delivery monitoring · Optimization recommendations.</p></article>
+<article class="skill-card reveal delay-2"><div class="skill-top"><h3>Data & Insights</h3><span class="skill-num">02</span></div><p>Performance reporting · CPL and funnel review · Lead-quality assessment · Campaign and creative diagnostics · Turning observations into clear next steps.</p></article>
+<article class="skill-card reveal delay-3"><div class="skill-top"><h3>Creative Production</h3><span class="skill-num">03</span></div><p>Video shooting and editing · Advertising banners and posters · Short-form content · Creative variations for paid-media campaigns.</p></article>
+</div>
+</div>
+</div>
+</section>
+
+<section class="section" id="work">
+<div class="wrap">
+<div class="section-head reveal"><div><div class="eyebrow">02 / Selected work</div><h2>Campaign thinking, made visible.</h2></div><p>Selected work is organized by the responsibilities I have handled. Detailed assets and performance figures will be added only when they are approved for public sharing.</p></div>
+<div class="work-grid">
+<article class="work-card wide reveal">
+<div class="work-visual visual-orange mask-reveal"><span class="visual-label">Performance / Case study 01</span><div class="visual-orb"></div><div class="visual-title">The right signal<br>changes the plan.</div></div>
+<div class="work-info"><div class="work-meta"><span id="project1Meta">Paid media · Lead generation</span><span>01 / 04</span></div><h3 id="project1Title">Meta Ads · Real Estate Lead Generation</h3><p id="project1Desc">Set up and monitor lead-generation campaigns for real-estate projects; coordinate audience, offer and creative angles, then review lead volume and quality.</p><div class="work-foot"><strong id="project1Foot">Campaign execution</strong><a id="project1Link" href="#" target="_blank" rel="noopener" hidden>Details ↗</a></div></div>
+</article>
+<article class="work-card narrow reveal delay-1">
+<div class="work-visual visual-cream mask-reveal"><span class="visual-label">Analysis / Case study 02</span><div class="visual-bars"><span></span><span></span><span></span><span></span><span></span></div><div class="visual-title">Measure.<br>Learn.<br>Adjust.</div></div>
+<div class="work-info"><div class="work-meta"><span id="project2Meta">Reporting · Optimization</span><span>02 / 04</span></div><h3 id="project2Title">Performance Analysis & Optimization</h3><p id="project2Desc">Review CPL, CTR, CPC, CPM and lead-quality signals; identify delivery or funnel issues and recommend campaign-level and product-message adjustments.</p><div class="work-foot"><strong id="project2Foot">Data-led optimization</strong><a id="project2Link" href="#" target="_blank" rel="noopener" hidden>Details ↗</a></div></div>
+</article>
+<article class="work-card narrow reveal">
+<div class="work-visual visual-ink mask-reveal"><span class="visual-label">Creative / Video</span><div class="visual-ring"></div><div class="visual-title">A message<br>in motion<span class="accent">.</span></div></div>
+<div class="work-info"><div class="work-meta"><span id="project3Meta">Creative production</span><span>03 / 04</span></div><h3 id="project3Title">Video Shooting & Editing</h3><p id="project3Desc">Produce and edit short-form advertising videos, including footage selection, editing, pacing, subtitles and format adaptation for campaign placements.</p><div class="work-foot"><strong id="project3Foot">Video production</strong><a id="project3Link" href="#" target="_blank" rel="noopener" hidden>Watch ↗</a></div></div>
+</article>
+<article class="work-card wide reveal delay-1">
+<div class="work-visual visual-lilac mask-reveal"><span class="visual-label">Creative / Design</span><div class="visual-squares"><span></span><span></span><span></span><span></span><span></span><span></span></div><div class="visual-title">One idea.<br>Different ways<br>to get noticed.</div></div>
+<div class="work-info"><div class="work-meta"><span id="project4Meta">Banner · Poster · Variations</span><span>04 / 04</span></div><h3 id="project4Title">Advertising Banners & Posters</h3><p id="project4Desc">Create advertising banners and posters that communicate project information, pricing, policies and product selling points in a clear campaign format.</p><div class="work-foot"><strong id="project4Foot">Advertising design</strong><a id="project4Link" href="#" target="_blank" rel="noopener" hidden>View ↗</a></div></div>
+</article>
+</div>
+<div class="case-note reveal">Portfolio integrity: do not publish confidential client data or label a campaign “successful” or a creative “winning” without evidence. If results cannot be shared, present the process and qualitative learning instead.</div>
+</div>
+</section>
+
+<section class="section section-white" id="process">
+<div class="wrap">
+<div class="section-head reveal"><div><div class="eyebrow">03 / Approach</div><h2>A clear loop from brief to better decisions.</h2></div><p>My working approach connects the business objective, the message and the evidence — with room to test, learn and improve.</p></div>
+<div class="process-grid">
+<article class="process-step reveal"><span class="step-no">STEP 01</span><h3>Understand</h3><p>Clarify the goal, audience, product, offer and constraints.</p></article>
+<article class="process-step reveal delay-1"><span class="step-no">STEP 02</span><h3>Build</h3><p>Set up campaigns and align creative angles with the audience.</p></article>
+<article class="process-step reveal delay-2"><span class="step-no">STEP 03</span><h3>Measure</h3><p>Monitor delivery, cost, engagement, lead signals and quality.</p></article>
+<article class="process-step reveal delay-3"><span class="step-no">STEP 04</span><h3>Improve</h3><p>Translate evidence into focused tests and next actions.</p></article>
+</div>
+</div>
+</section>
+
+<section class="section" id="tools">
+<div class="wrap tools-layout">
+<div class="reveal"><div class="eyebrow">04 / Toolkit</div><h2>Tools for both sides of the work.</h2><p>Tool list based on the current portfolio brief. Keep only tools and platforms you can confidently discuss in an interview.</p></div>
+<div class="tool-cloud reveal delay-1" id="toolCloud"><span class="tool">Meta Ads</span><span class="tool">Google Ads</span><span class="tool">TikTok Ads</span><span class="tool">Microsoft Ads</span><span class="tool">MGID</span><span class="tool">Google Sheets / Reporting</span><span class="tool">Adobe Premiere Pro</span><span class="tool">CapCut</span><span class="tool">Adobe Photoshop</span><span class="tool">Adobe Illustrator</span><span class="tool">Adobe After Effects</span><span class="tool">Canva</span></div>
+</div>
+</section>
+
+<section class="section section-white" id="contact">
+<div class="wrap">
+<div class="contact-panel reveal">
+<div><div class="eyebrow" style="color:#ff9877">05 / Contact</div><h2>Let’s make the next move count.</h2><p>Interested in Performance Marketing, campaign optimization and creative-led growth. For professional opportunities and collaboration in Performance Marketing and digital campaign execution.</p></div>
+<div class="contact-details"><p><strong>Location</strong> · Vietnam</p><p>Contact details can be added when ready to publish.</p></div>
+</div>
+<footer class="footer"><span>© 2026 · <span id="footerName">LÊ NGỌC THIÊN BẢO</span> · Portfolio</span><span>Performance Marketing · Creative Production</span></footer>
+</div>
+</section>
+</main>
+<script>
+(function(){
+  const items = document.querySelectorAll('.reveal');
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduceMotion || !('IntersectionObserver' in window)) {
+    items.forEach(el => el.classList.add('is-visible'));
+    return;
+  }
+  const observer = new IntersectionObserver((entries, obs) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-visible');
+        obs.unobserve(entry.target);
+      }
+    });
+  }, {rootMargin:'0px 0px -8% 0px', threshold:0.08});
+  items.forEach(el => observer.observe(el));
+})();
+</script>
+<script src="/portfolio.js" defer></script>
+<script src="/portfolio.js" defer></script>
+</body>
+</html>

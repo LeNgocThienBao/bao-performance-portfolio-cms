@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS bao_portfolio_content_v2 (
+  id INTEGER PRIMARY KEY CHECK (id = 1),
+  content TEXT NOT NULL,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

@@ -1,0 +1,13 @@
+name = "bao-performance-portfolio-cms"
+main = "worker.js"
+compatibility_date = "2026-11-01"
+
+[assets]
+directory = "./public"
+binding = "ASSETS"
+run_worker_first = true
+
+[[d1_databases]]
+binding = "DB"
+database_name = "bao-portfolio-cms-db"
+database_id = "PASTE_NEW_D1_DATABASE_ID_HERE"
