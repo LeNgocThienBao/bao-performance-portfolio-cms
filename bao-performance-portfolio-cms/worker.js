@@ -48,4 +48,43 @@ async function api(req,env,url){
  }
  return json({error:'Not found'},404);
 }
-export default {async fetch(req,env){const url=new URL(req.url);if(url.pathname.startsWith('/api/'))return api(req,env,url);if(url.pathname==='/admin'||url.pathname==='/admin/')return env.ASSETS.fetch(new Request(new URL('/admin.html',url),req));return env.ASSETS.fetch(req)}};
+
+export default {
+  async fetch(req, env) {
+    const url = new URL(req.url);
+
+    // Xử lý API
+    if (url.pathname.startsWith("/api/")) {
+      return api(req, env, url);
+    }
+
+    // Xử lý trang Admin, tránh vòng lặp redirect 307
+    if (
+      url.pathname === "/admin" ||
+      url.pathname === "/admin/"
+    ) {
+      const assetRequest = new Request(
+        new URL("/admin-page.txt", req.url)
+      );
+
+      const assetResponse = await env.ASSETS.fetch(assetRequest);
+
+      if (!assetResponse.ok) {
+        return new Response("Admin asset unavailable", {
+          status: 502
+        });
+      }
+
+      return new Response(assetResponse.body, {
+        status: 200,
+        headers: {
+          "content-type": "text/html; charset=utf-8",
+          "cache-control": "no-store",
+          "x-content-type-options": "nosniff"
+        }
+      });
+    }
+
+    return env.ASSETS.fetch(req);
+  }
+};
