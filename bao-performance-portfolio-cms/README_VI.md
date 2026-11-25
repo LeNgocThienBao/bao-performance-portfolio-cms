@@ -26,3 +26,4 @@ Có thể sửa tên hiển thị, chức danh, giới thiệu, thông tin kinh 
 
 ## Bảo mật
 Mật khẩu và SESSION_SECRET chỉ đặt trong Cloudflare Secrets, không ghi vào source code. Cookie quản trị HttpOnly/Secure/SameSite=Strict; phiên hết hạn sau 8 giờ.
+<!-- Portfolio V2 - Initial deployment -->
