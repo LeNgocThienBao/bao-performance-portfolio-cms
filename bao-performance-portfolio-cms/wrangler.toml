@@ -1,4 +1,5 @@
-name = "bao-performance-portfolio-cms"
+
+name = "bao-portfolio-v2"
 main = "worker.js"
 compatibility_date = "2026-11-01"
 
@@ -9,9 +10,9 @@ run_worker_first = ["/api/*", "/admin", "/admin/"]
 
 [[d1_databases]]
 binding = "DB"
-database_name = "bao-portfolio-cms-db"
-database_id = "c29ed42c-4e37-4298-8e65-661d6b1e983c"
+database_name = "bao-portfolio-v2-db"
+database_id = "f8fe22fc-cf81-464d-a286-52bb1bc3cccd"
 
 [[r2_buckets]]
 binding = "MEDIA"
-bucket_name = "bao-portfolio-media"
+bucket_name = "bao-portfolio-v2-media"
