@@ -171,6 +171,45 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--orange);outline-off
  .reveal{opacity:1;transform:none}
  .mask-reveal{clip-path:none}
 }
+
+
+/* CMS PROJECT IMAGE */
+
+.work-visual.has-image {
+  padding: 0;
+  background: #eae7e0;
+}
+
+.work-visual.has-image .project-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  z-index: 2;
+  transition: transform .5s ease;
+}
+
+.work-visual.has-image::after {
+  display: none;
+}
+
+.work-card:hover .work-visual.has-image .project-image {
+  transform: scale(1.035);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .work-visual.has-image .project-image {
+    transition: none;
+  }
+
+  .work-card:hover .work-visual.has-image .project-image {
+    transform: none;
+  }
+} 
+ 
 </style>
 </head>
 <body>
