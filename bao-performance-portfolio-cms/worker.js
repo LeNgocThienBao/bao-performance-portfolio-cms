@@ -176,13 +176,14 @@ async function getContent(env) {
 // R2 MEDIA CONFIGURATION
 
 const MEDIA_PATTERN =
-  /^\/api\/media\/([a-zA-Z0-9_-]+\.(?:jpg|png|webp|gif))$/;
+  /^\/api\/media\/([a-zA-Z0-9_-]+\.(?:jpg|png|webp|gif|pdf))$/;
 
 const MEDIA_TYPES = {
   "image/jpeg": "jpg",
   "image/png": "png",
   "image/webp": "webp",
-  "image/gif": "gif"
+  "image/gif": "gif",
+  "application/pdf": "pdf"
 };
 
 function mediaKey(path) {
@@ -245,21 +246,48 @@ function cleanRecords(value, fields, max = 50) {
     });
 }
 
-async function validateMedia(value, env) {
+
+async function validateMedia(value, env, kind = "image") {
   if (value === "") return "";
 
   const key = mediaKey(value);
 
   if (!key) {
-    throw new Error("Đường dẫn hình ảnh không hợp lệ.");
+    throw new Error("Đường dẫn file không hợp lệ.");
+  }
+
+  const isPDF = key.endsWith(".pdf");
+
+  if (kind === "image" && isPDF) {
+    throw new Error("Trường này chỉ chấp nhận hình ảnh.");
+  }
+
+  if (kind === "pdf" && !isPDF) {
+    throw new Error("CV phải có định dạng PDF.");
   }
 
   if (!env.MEDIA) {
     throw new Error("R2 chưa được cấu hình.");
   }
 
-  if (!(await env.MEDIA.head(key))) {
-    throw new Error("Hình ảnh không tồn tại trong R2.");
+  const object = await env.MEDIA.head(key);
+
+  if (!object) {
+    throw new Error("File không tồn tại trong R2.");
+  }
+
+  const contentType = object.httpMetadata?.contentType;
+
+  if (kind === "pdf" && contentType !== "application/pdf") {
+    throw new Error("File CV không hợp lệ.");
+  }
+
+  if (
+    kind === "image" &&
+    !["image/jpeg", "image/png", "image/webp", "image/gif"]
+      .includes(contentType)
+  ) {
+    throw new Error("Định dạng hình ảnh không hợp lệ.");
   }
 
   return value;
@@ -346,7 +374,9 @@ try {
     });
   }
 
-  // GET IMAGE FROM R2
+
+  // GET MEDIA FROM R2
+
   if (
     url.pathname.startsWith("/api/media/") &&
     req.method === "GET"
@@ -355,7 +385,7 @@ try {
 
     if (!key) {
       return json({
-        error: "Đường dẫn ảnh không hợp lệ."
+        error: "Đường dẫn file không hợp lệ."
       }, 404);
     }
 
@@ -369,7 +399,7 @@ try {
 
     if (!object) {
       return json({
-        error: "Không tìm thấy ảnh."
+        error: "Không tìm thấy file."
       }, 404);
     }
 
@@ -377,20 +407,36 @@ try {
       object.httpMetadata?.contentType ||
       "application/octet-stream";
 
+    const headers = new Headers({
+      "content-type": type,
+      "cache-control": "public, max-age=3600",
+      "x-content-type-options": "nosniff"
+    });
+
+    if (key.endsWith(".pdf")) {
+      headers.set("content-type", "application/pdf");
+
+      headers.set(
+        "content-disposition",
+        'attachment; filename="Le-Ngoc-Thien-Bao-CV.pdf"'
+      );
+    }
+
     return new Response(object.body, {
-      headers: {
-        "content-type": type,
-        "cache-control": "public, max-age=3600",
-        "x-content-type-options": "nosniff"
-      }
+      headers
     });
   }
 
-  // UPLOAD IMAGE TO R2
+ 
+  // UPLOAD MEDIA TO R2
+
   if (
     url.pathname === "/api/media/upload" &&
     req.method === "POST"
   ) {
+
+    // Authentication
+
     if (!(await validSession(req, env))) {
       return json({
         error: "Phiên đăng nhập đã hết hạn."
@@ -411,22 +457,29 @@ try {
       }, 503);
     }
 
-    const max = 5 * 1024 * 1024;
+    // File size configuration
+
+    const MAX_IMAGE = 5 * 1024 * 1024;
+    const MAX_PDF = 10 * 1024 * 1024;
+
     const len = Number(
       req.headers.get("content-length") || 0
     );
 
-    if (len > max + 65536) {
+    if (len > MAX_PDF + 65536) {
       return json({
-        error: "Ảnh phải nhỏ hơn 5 MB."
+        error: "File không được vượt quá 10 MB."
       }, 413);
     }
+
+    // Read uploaded file
 
     let form;
 
     try {
       form = await req.formData();
-    } catch (e) {
+
+    } catch {
       return json({
         error: "Dữ liệu upload không hợp lệ."
       }, 400);
@@ -436,23 +489,36 @@ try {
 
     if (!(file instanceof File)) {
       return json({
-        error: "Chưa chọn ảnh."
+        error: "Chưa chọn file."
       }, 400);
-    }
-
-    if (file.size === 0 || file.size > max) {
-      return json({
-        error: "Ảnh phải từ 1 byte đến 5 MB."
-      }, 413);
     }
 
     const ext = MEDIA_TYPES[file.type];
 
     if (!ext) {
       return json({
-        error: "Chỉ nhận JPG, PNG, WebP hoặc GIF."
+        error: "Chỉ hỗ trợ JPG, PNG, WebP, GIF và PDF."
       }, 415);
     }
+
+    const isPDF = ext === "pdf";
+
+    const maxSize = isPDF
+      ? MAX_PDF
+      : MAX_IMAGE;
+
+    if (
+      file.size === 0 ||
+      file.size > maxSize
+    ) {
+      return json({
+        error: isPDF
+          ? "CV PDF phải nhỏ hơn hoặc bằng 10 MB."
+          : "Hình ảnh phải nhỏ hơn hoặc bằng 5 MB."
+      }, 413);
+    }
+
+    // Validate actual file format
 
     const bytes = new Uint8Array(
       await file.arrayBuffer()
@@ -469,41 +535,78 @@ try {
       bytes[2] === 78 &&
       bytes[3] === 71 &&
       bytes[4] === 13 &&
-      bytes[5] === 10;
+      bytes[5] === 10 &&
+      bytes[6] === 26 &&
+      bytes[7] === 10;
 
     const isWebp =
-      String.fromCharCode(...bytes.slice(0, 4)) === "RIFF" &&
-      String.fromCharCode(...bytes.slice(8, 12)) === "WEBP";
+      String.fromCharCode(
+        ...bytes.slice(0, 4)
+      ) === "RIFF" &&
+      String.fromCharCode(
+        ...bytes.slice(8, 12)
+      ) === "WEBP";
+
+    const gifHeader = String.fromCharCode(
+      ...bytes.slice(0, 6)
+    );
 
     const isGif =
-      String.fromCharCode(...bytes.slice(0, 6))
-        .startsWith("GIF8");
+      gifHeader === "GIF87a" ||
+      gifHeader === "GIF89a";
 
-    if (!({
+    const isValidPDF =
+      String.fromCharCode(
+        ...bytes.slice(0, 5)
+      ) === "%PDF-";
+
+    const validFormats = {
       jpg: isJpg,
       png: isPng,
       webp: isWebp,
-      gif: isGif
-    })[ext]) {
+      gif: isGif,
+      pdf: isValidPDF
+    };
+
+    if (!validFormats[ext]) {
       return json({
         error: "Định dạng thực tế không khớp loại file."
       }, 415);
     }
 
+    // Generate unique storage key
+
     const key = `${crypto.randomUUID()}.${ext}`;
 
-    await env.MEDIA.put(key, bytes, {
-      httpMetadata: {
-        contentType: file.type
-      }
-    });
+    // Save file to R2
 
-    return json({
-      ok: true,
-      url: `/api/media/${key}`
-    });
+    try {
+
+      await env.MEDIA.put(key, bytes, {
+        httpMetadata: {
+          contentType: file.type
+        }
+      });
+
+      return json({
+        ok: true,
+        url: `/api/media/${key}`,
+        type: isPDF ? "pdf" : "image",
+        size: file.size
+      });
+
+    } catch (error) {
+
+      console.error(
+        "R2 upload:",
+        error.message
+      );
+
+      return json({
+        error: "Không thể lưu file vào R2."
+      }, 503);
+    }
   }
-
 
   // SAVE CONTENT TO D1 - CMS V2
 
@@ -623,6 +726,24 @@ try {
       }, 400);
     }
 
+// CV document
+
+    try {
+      if (has("cvUrl")) {
+        clean.cvUrl = await validateMedia(
+          cleanText(data.cvUrl, 500),
+          env,
+          "pdf"
+        );
+      }
+
+    } catch (error) {
+      return json({
+        error: error.message
+      }, 400);
+    }
+
+    
     // Contact information
 
     if (
