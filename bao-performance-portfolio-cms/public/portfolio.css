@@ -2227,3 +2227,116 @@ svg {
 /* ==================================================
    END OF PORTFOLIO V2 STYLESHEET
 ================================================== */
+
+
+/* ==================================================
+   PORTFOLIO V2.1
+   LANGUAGE SWITCHER
+================================================== */
+
+.language-switcher {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  gap: 3px;
+  padding: 3px;
+  border: 1px solid var(--line, #dedcd6);
+  border-radius: 999px;
+  background: transparent;
+}
+
+.language-switcher button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 34px;
+  min-height: 30px;
+  padding: 6px 9px;
+
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+
+  color: var(--muted, #74736e);
+
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.03em;
+
+  cursor: pointer;
+
+  transition:
+    background 0.22s ease,
+    color 0.22s ease,
+    transform 0.22s ease;
+}
+
+.language-switcher button:hover {
+  color: var(--accent, #f06435);
+}
+
+.language-switcher button.is-active,
+.language-switcher button[aria-pressed="true"] {
+  background: var(--accent, #f06435);
+  color: #191a17;
+}
+
+.language-switcher button:active {
+  transform: scale(0.94);
+}
+
+.language-switcher button:focus-visible {
+  outline: 2px solid var(--accent, #f06435);
+  outline-offset: 3px;
+}
+
+/* Desktop */
+
+.language-switcher--desktop {
+  margin-inline: 8px;
+}
+
+/* Mobile */
+
+.language-switcher--mobile {
+  display: none;
+}
+
+@media (max-width: 900px) {
+
+  .language-switcher--desktop {
+    display: none;
+  }
+
+  .language-switcher--mobile {
+    display: inline-flex;
+    align-self: flex-start;
+    margin-top: 16px;
+  }
+
+  .language-switcher--mobile button {
+    min-width: 48px;
+    min-height: 44px;
+    font-size: 13px;
+  }
+
+}
+
+/* Reduced motion */
+
+@media (prefers-reduced-motion: reduce) {
+
+  .language-switcher button {
+    transition: none;
+  }
+
+}
+
+/* ==================================================
+   END LANGUAGE SWITCHER
+================================================== */
+
