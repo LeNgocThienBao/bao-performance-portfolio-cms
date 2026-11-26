@@ -123,7 +123,10 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--orange);outline-off
 .reveal{opacity:0;transform:translateY(24px);transition:opacity .7s ease,transform .7s cubic-bezier(.2,.7,.2,1)}
 .reveal.is-visible{opacity:1;transform:translateY(0)}
 .mask-reveal{clip-path:inset(0 0 100% 0);transition:clip-path .9s cubic-bezier(.2,.7,.2,1)}
-.mask-reveal.is-visible{clip-path:inset(0 0 0 0)}
+.mask-reveal.is-visible,
+.reveal.is-visible .mask-reveal {
+  clip-path: inset(0 0 0 0);
+}
 .delay-1{transition-delay:.08s}.delay-2{transition-delay:.16s}.delay-3{transition-delay:.24s}
 @keyframes word-in{to{transform:translateY(0)}}
 @keyframes ambient{from{transform:translate3d(0,0,0) scale(1)}to{transform:translate3d(-24px,28px,0) scale(1.08)}}
