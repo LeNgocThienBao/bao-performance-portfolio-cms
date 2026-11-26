@@ -59,6 +59,7 @@ const LIMITS = {
 ========================================= */
 
 const state = {
+  language: "en",
   content: null,
   original: null,
   section: "overview",
@@ -751,18 +752,439 @@ function field(
   return wrap;
 }
 
+// =========================================
+// MULTILINGUAL CMS ENGINE — V2.1
+// =========================================
+
+const TRANSLATABLE_FIELDS = {
+
+  personal: [
+    "jobTitle",
+    "experienceMeta",
+    "locationMeta"
+  ],
+
+  hero: [
+    "heroKicker",
+    "heroHeadline",
+    "heroLead",
+    "heroPrimaryCTA",
+    "heroSecondaryCTA"
+  ],
+
+  projects: [
+    "title",
+    "category",
+    "meta",
+    "role",
+    "description",
+    "results"
+  ],
+
+  workExperience: [
+    "position",
+    "period",
+    "location",
+    "description"
+  ],
+
+  competencies: [
+    "title"
+  ],
+
+  tools: [
+    "title"
+  ],
+
+  education: [
+    "school",
+    "degree",
+    "major",
+    "period",
+    "description"
+  ],
+
+  certifications: [
+    "title",
+    "date",
+    "description"
+  ],
+
+  contact: [
+    "headline",
+    "description"
+  ]
+
+};
+
+
+function getVietnameseContent() {
+
+  const data = state.content;
+
+  if (!data.translations) {
+    data.translations = {};
+  }
+
+  if (!data.translations.vi) {
+    data.translations.vi = {};
+  }
+
+  return data.translations.vi;
+
+}
+
+
+function getTranslationTarget(
+  object,
+  key,
+  create = false
+) {
+
+  const data = state.content;
+
+  let group = "";
+
+  if (object === data) {
+
+    const allowed = [
+      ...TRANSLATABLE_FIELDS.personal,
+      ...TRANSLATABLE_FIELDS.hero
+    ];
+
+    if (!allowed.includes(key)) {
+      return null;
+    }
+
+    return create
+      ? getVietnameseContent()
+      : data.translations?.vi || {};
+
+  }
+
+  if (object === data.contact) {
+
+    if (
+      !TRANSLATABLE_FIELDS.contact.includes(key)
+    ) {
+      return null;
+    }
+
+    if (!create) {
+      return data.translations?.vi?.contact || {};
+    }
+
+    const vi = getVietnameseContent();
+
+    vi.contact ||= {};
+
+    return vi.contact;
+
+  }
+
+  for (const name of Object.keys(LIMITS)) {
+
+    if (data[name].includes(object)) {
+
+      group = name;
+
+      break;
+
+    }
+
+  }
+
+  if (
+    !group ||
+    !TRANSLATABLE_FIELDS[group]?.includes(key)
+  ) {
+    return null;
+  }
+
+  if (!create) {
+
+    const records =
+      data.translations?.vi?.[group];
+
+    return Array.isArray(records)
+      ? records.find(
+          record => record.id === object.id
+        ) || {}
+      : {};
+
+  }
+
+  const vi = getVietnameseContent();
+
+  if (!Array.isArray(vi[group])) {
+    vi[group] = [];
+  }
+
+  let translated = vi[group].find(
+    record => record.id === object.id
+  );
+
+  if (!translated) {
+
+    translated = {
+      id: object.id
+    };
+
+    vi[group].push(translated);
+
+  }
+
+  return translated;
+
+}
+
+
+function renderLanguageSwitcher() {
+
+  const panel = el(
+    "div",
+    "admin-language-panel"
+  );
+
+  const heading = el(
+    "div",
+    "admin-language-heading"
+  );
+
+  heading.append(
+    el(
+      "strong",
+      "",
+      "Content language"
+    ),
+    el(
+      "p",
+      "admin-language-description",
+      "Manage English and Vietnamese content independently."
+    )
+  );
+
+  const controls = el(
+    "div",
+    "admin-language-switcher"
+  );
+
+  controls.setAttribute("role", "group");
+
+  controls.setAttribute(
+    "aria-label",
+    "Content language"
+  );
+
+  for (const [language, label] of [
+    ["en", "English (EN)"],
+    ["vi", "Tiếng Việt (VI)"]
+  ]) {
+
+    const active =
+      state.language === language;
+
+    const control = button(
+      label,
+      "admin-language-button" +
+      (active ? " is-active" : ""),
+      () => {
+
+        if (isBusy()) return;
+
+        if (state.language === language) {
+          return;
+        }
+
+        state.language = language;
+
+        renderSection();
+
+      }
+    );
+
+    control.setAttribute(
+      "aria-pressed",
+      String(active)
+    );
+
+
+    controls.append(control);
+
+  }
+
+  panel.append(heading, controls);
+
+  if (state.language === "vi") {
+
+    panel.append(
+      el(
+        "div",
+        "admin-language-note",
+        "Blank Vietnamese fields use English content. Shared fields and record actions affect both languages."
+      )
+    );
+
+  }
+
+  return panel;
+
+}
+
+
+function translatedField(
+  object,
+  key,
+  label,
+  options = {}
+) {
+
+  const target = getTranslationTarget(
+    object,
+    key
+  );
+
+  // Shared content
+
+  if (target === null) {
+
+    return field(
+      `${label} · Shared`,
+      object[key],
+      value => {
+        object[key] = value;
+      },
+      options
+    );
+
+  }
+
+  // English content
+
+  if (state.language === "en") {
+
+    return field(
+      `${label} · EN`,
+      object[key],
+      value => {
+        object[key] = value;
+      },
+      options
+    );
+
+  }
+
+  // Vietnamese content
+
+  return field(
+    `${label} · VI`,
+    target[key] || "",
+    value => {
+
+      const translated =
+        getTranslationTarget(
+          object,
+          key,
+          true
+        );
+
+      translated[key] = value;
+
+    },
+    {
+      ...options,
+
+      placeholder:
+        object[key] ||
+        options.placeholder ||
+        "Enter Vietnamese content",
+
+      hint:
+        "Leave blank to use English content."
+    }
+  );
+
+}
+
+
+function removeRecordTranslation(
+  key,
+  id
+) {
+
+  const vi =
+    state.content.translations?.vi;
+
+  if (!Array.isArray(vi?.[key])) {
+    return;
+  }
+
+  vi[key] = vi[key].filter(
+    record => record.id !== id
+  );
+
+}
+
+
+function renderTranslatedSkills(group) {
+
+  const records =
+    state.content.translations?.vi?.competencies;
+
+  const translated = Array.isArray(records)
+    ? records.find(
+        record => record.id === group.id
+      )
+    : null;
+
+  const items = Array.isArray(translated?.items)
+    ? translated.items
+    : [];
+
+  return field(
+    "Skills · VI (one item per line)",
+    items.join("\n"),
+    value => {
+
+      const target = getTranslationTarget(
+        group,
+        "title",
+        true
+      );
+
+      target.items = value
+        .split("\n")
+        .map(item => item.trim())
+        .filter(Boolean)
+        .slice(0, 50)
+        .map(item => item.slice(0, 500));
+
+    },
+    {
+      multiline: true,
+      large: true,
+      placeholder: group.items.join("\n"),
+      hint: "Enter one translated skill per line. Leave blank to use the English skill list."
+    }
+  );
+
+}
+
+// =========================================
+// END MULTILINGUAL CMS ENGINE
+// =========================================
+
+
 function boundField(
   object,
   key,
   label,
   options = {}
 ) {
-  return field(
+  return translatedField(
+    object,
+    key,
     label,
-    object[key],
-    value => {
-      object[key] = value;
-    },
     options
   );
 }
@@ -1571,13 +1993,15 @@ function addRecord(key, record) {
   }
 
   list.push({
-    id: uid(),
-    ...record
-  });
+  id: uid(),
+  ...record
+});
 
-  markDirty();
+state.language = "en";
 
-  renderSection();
+markDirty();
+
+renderSection();
 
   const cards = $$(".record-card");
 
@@ -1597,7 +2021,19 @@ function removeRecord(key, index) {
     return;
   }
 
-  state.content[key].splice(index, 1);
+  const removedRecord =
+  state.content[key][index];
+
+if (removedRecord) {
+
+  removeRecordTranslation(
+    key,
+    removedRecord.id
+  );
+
+}
+
+state.content[key].splice(index, 1);
 
   markDirty();
 
@@ -2039,7 +2475,20 @@ function renderGroups(
         { max: 200 }
       )
     );
+if (
+  key === "competencies" &&
+  state.language === "vi"
+) {
 
+  node.append(
+    renderTranslatedSkills(group)
+  );
+
+  list.append(node);
+
+  return;
+
+}
     const tags = el(
       "div",
       "tag-list"
@@ -2576,10 +3025,18 @@ function renderSection() {
 
   root.replaceChildren();
 
-  const section = el(
-    "div",
-    "page-section"
+if (
+  !["overview", "cv"].includes(state.section)
+) {
+  root.append(
+    renderLanguageSwitcher()
   );
+}
+
+const section = el(
+  "div",
+  "page-section"
+);
 
   switch (state.section) {
     case "personal":
@@ -2788,7 +3245,7 @@ function validateContent(data) {
 
   const payload = JSON.stringify(data);
 
-  if (payload.length > 500000) {
+  if (new TextEncoder().encode(payload).length > 500000) {
     throw new Error(
       "Nội dung vượt quá giới hạn Backend."
     );
