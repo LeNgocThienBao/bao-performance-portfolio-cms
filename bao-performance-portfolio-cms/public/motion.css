@@ -1,0 +1,656 @@
+
+/* ==================================================
+   BAO LE — PERFORMANCE MARKETING PORTFOLIO
+   FRONTEND V2
+   UI/UX & MOTION OPTIMIZATION
+================================================== */
+
+
+/* ==================================================
+   01. MOTION DESIGN TOKENS
+================================================== */
+
+:root {
+  --motion-fast: 220ms;
+  --motion-normal: 420ms;
+  --motion-slow: 750ms;
+
+  --motion-ease: cubic-bezier(.22, 1, .36, 1);
+
+  --motion-shadow:
+    0 18px 48px rgba(34, 34, 31, .09);
+
+  --motion-shadow-soft:
+    0 8px 24px rgba(34, 34, 31, .06);
+}
+
+
+/* ==================================================
+   02. TYPOGRAPHY OPTIMIZATION
+================================================== */
+
+.hero-headline,
+.hero h1 {
+  font-weight: 700;
+  letter-spacing: -.045em;
+  line-height: 1.08;
+}
+
+.hero-line {
+  padding-bottom: .06em;
+}
+
+.section-title {
+  font-weight: 700;
+  letter-spacing: -.045em;
+  line-height: 1.1;
+}
+
+.about-statement,
+.contact-headline {
+  font-weight: 700;
+  letter-spacing: -.045em;
+  line-height: 1.1;
+}
+
+.work-title,
+.timeline-company,
+.competency-title {
+  font-weight: 700;
+  letter-spacing: -.035em;
+}
+
+.hero-lead {
+  line-height: 1.8;
+}
+
+
+/* ==================================================
+   03. NAVIGATION INTERACTION
+================================================== */
+
+.topbar,
+.site-header {
+  transition:
+    background var(--motion-normal) var(--motion-ease),
+    box-shadow var(--motion-normal) var(--motion-ease);
+}
+
+.topbar.is-scrolled,
+.site-header.is-scrolled {
+  background: rgba(246, 244, 240, .97);
+  box-shadow: 0 4px 24px rgba(34, 34, 31, .05);
+}
+
+.nav-links a::after {
+  height: 2px;
+  transition:
+    transform var(--motion-normal) var(--motion-ease);
+}
+
+.nav-links a.active {
+  color: var(--ink);
+}
+
+.scroll-progress {
+  height: 3px;
+  border-radius: 0 3px 3px 0;
+}
+
+
+/* ==================================================
+   04. HERO ENTRANCE
+================================================== */
+
+.motion-ready .hero-line-inner {
+  animation:
+    portfolioHeadlineReveal
+    850ms var(--motion-ease) both;
+}
+
+.motion-ready .hero-line:nth-child(2)
+.hero-line-inner {
+  animation-delay: 100ms;
+}
+
+.motion-ready .hero-line:nth-child(3)
+.hero-line-inner {
+  animation-delay: 200ms;
+}
+
+.motion-ready .hero-line:nth-child(4)
+.hero-line-inner {
+  animation-delay: 300ms;
+}
+
+@keyframes portfolioHeadlineReveal {
+  from {
+    opacity: 0;
+    transform: translateY(65%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.motion-ready .hero-kicker {
+  animation:
+    portfolioFadeUp
+    650ms var(--motion-ease) both;
+}
+
+.motion-ready .hero-lead {
+  animation:
+    portfolioFadeUp
+    750ms var(--motion-ease) 150ms both;
+}
+
+.motion-ready .hero-actions {
+  animation:
+    portfolioFadeUp
+    750ms var(--motion-ease) 230ms both;
+}
+
+.motion-ready .hero-meta {
+  animation:
+    portfolioFadeUp
+    750ms var(--motion-ease) 280ms both;
+}
+
+@keyframes portfolioFadeUp {
+  from {
+    opacity: 0;
+    translate: 0 18px;
+  }
+
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+
+/* ==================================================
+   05. AVATAR ANIMATION
+================================================== */
+
+.hero-avatar-wrap {
+  box-shadow: var(--motion-shadow-soft);
+}
+
+.motion-ready .hero-avatar-wrap {
+  animation:
+    portfolioAvatarEntrance
+    900ms var(--motion-ease) both;
+}
+
+@keyframes portfolioAvatarEntrance {
+  from {
+    opacity: 0;
+    scale: .97;
+  }
+
+  to {
+    opacity: 1;
+    scale: 1;
+  }
+}
+
+.hero-avatar,
+.hero-avatar-wrap img {
+  transition:
+    transform 850ms var(--motion-ease);
+}
+
+
+/* ==================================================
+   06. SCROLL REVEAL OPTIMIZATION
+================================================== */
+
+.motion-ready .reveal {
+  transform: translateY(20px);
+
+  transition:
+    opacity 700ms var(--motion-ease),
+    transform 750ms var(--motion-ease),
+    box-shadow var(--motion-normal) var(--motion-ease),
+    border-color var(--motion-normal) var(--motion-ease);
+}
+
+.motion-ready .reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.motion-ready .reveal-left,
+.motion-ready .reveal-right {
+  transition:
+    opacity 700ms var(--motion-ease),
+    transform 750ms var(--motion-ease);
+}
+
+.motion-ready .mask-reveal {
+  transition:
+    clip-path 850ms var(--motion-ease);
+}
+
+
+/* ==================================================
+   07. PROJECT CARD INTERACTION
+================================================== */
+
+.work-card {
+  transition:
+    transform var(--motion-normal) var(--motion-ease),
+    box-shadow var(--motion-normal) var(--motion-ease),
+    border-color var(--motion-normal) var(--motion-ease);
+}
+
+.work-card .project-image,
+.work-card .work-visual img {
+  transition:
+    transform 900ms var(--motion-ease);
+}
+
+.work-index {
+  transition:
+    background var(--motion-fast) ease,
+    color var(--motion-fast) ease;
+}
+
+.work-link .btn-arrow {
+  transition:
+    transform var(--motion-normal) var(--motion-ease);
+}
+
+
+/* ==================================================
+   08. CAREER JOURNEY
+================================================== */
+
+.timeline-dot {
+  transition:
+    box-shadow var(--motion-normal) var(--motion-ease);
+}
+
+.motion-ready .timeline-item.is-visible
+.timeline-dot {
+  animation:
+    portfolioTimelineDot
+    650ms var(--motion-ease) both;
+}
+
+@keyframes portfolioTimelineDot {
+  from {
+    box-shadow: 0 0 0 8px rgba(240, 100, 53, .15);
+  }
+
+  to {
+    box-shadow: 0 0 0 1px var(--accent);
+  }
+}
+
+.timeline-company {
+  transition:
+    color var(--motion-fast) ease;
+}
+
+
+/* ==================================================
+   09. CORE COMPETENCIES
+================================================== */
+
+.competency-card {
+  transition:
+    transform var(--motion-normal) var(--motion-ease),
+    box-shadow var(--motion-normal) var(--motion-ease),
+    border-color var(--motion-normal) var(--motion-ease);
+}
+
+.competency-list li {
+  transition:
+    color var(--motion-fast) ease,
+    padding-left var(--motion-fast) var(--motion-ease);
+}
+
+.competency-list li::before {
+  transition:
+    transform var(--motion-fast) var(--motion-ease);
+}
+
+
+/* ==================================================
+   10. TOOLS & PLATFORMS
+================================================== */
+
+.tool-group {
+  transition:
+    border-color var(--motion-normal) var(--motion-ease),
+    box-shadow var(--motion-normal) var(--motion-ease);
+}
+
+.tool-chip,
+.tool,
+.tag {
+  transition:
+    background var(--motion-fast) ease,
+    color var(--motion-fast) ease,
+    border-color var(--motion-fast) ease,
+    transform var(--motion-normal) var(--motion-ease);
+}
+
+
+/* ==================================================
+   11. STAGGER ANIMATION
+================================================== */
+
+.motion-ready .competency-card.is-visible
+.competency-list li,
+
+.motion-ready .tool-group.is-visible
+.tool-chip {
+  animation:
+    portfolioFadeUp
+    500ms var(--motion-ease)
+    var(--item-delay, 0ms) both;
+}
+
+
+/* ==================================================
+   12. CTA & MAGNETIC INTERACTION
+================================================== */
+
+.btn,
+.button {
+  transition:
+    background var(--motion-fast) ease,
+    color var(--motion-fast) ease,
+    border-color var(--motion-fast) ease,
+    transform var(--motion-normal) var(--motion-ease),
+    box-shadow var(--motion-normal) var(--motion-ease);
+}
+
+.motion-magnetic {
+  translate:
+    var(--magnetic-x, 0px)
+    var(--magnetic-y, 0px);
+
+  transition:
+    translate 300ms var(--motion-ease),
+    transform var(--motion-normal) var(--motion-ease),
+    background var(--motion-fast) ease,
+    color var(--motion-fast) ease,
+    border-color var(--motion-fast) ease,
+    box-shadow var(--motion-normal) var(--motion-ease);
+}
+
+
+/* ==================================================
+   13. EDUCATION & CERTIFICATIONS
+================================================== */
+
+.credential-panel {
+  transition:
+    border-color var(--motion-normal) var(--motion-ease),
+    box-shadow var(--motion-normal) var(--motion-ease);
+}
+
+.credential-title {
+  transition:
+    color var(--motion-fast) ease;
+}
+
+
+/* ==================================================
+   14. CONTACT & FOOTER
+================================================== */
+
+.social-link {
+  transition:
+    background var(--motion-fast) ease,
+    border-color var(--motion-fast) ease,
+    color var(--motion-fast) ease,
+    transform var(--motion-normal) var(--motion-ease);
+}
+
+.back-to-top-icon {
+  transition:
+    background var(--motion-fast) ease,
+    color var(--motion-fast) ease,
+    transform var(--motion-normal) var(--motion-ease);
+}
+
+
+/* ==================================================
+   15. DESKTOP HOVER EFFECTS
+================================================== */
+
+@media (hover: hover) and (pointer: fine) {
+
+  .work-card:hover,
+  .motion-ready .work-card.reveal.is-visible:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--motion-shadow);
+    border-color: #d3cfc6;
+  }
+
+  .work-card:hover .project-image,
+  .work-card:hover .work-visual img {
+    transform: scale(1.055);
+  }
+
+  .work-card:hover .work-index {
+    background: var(--ink);
+    color: var(--white);
+  }
+
+  .work-link:hover .btn-arrow {
+    transform: translate(3px, -3px);
+  }
+
+  .hero-avatar-wrap:hover img {
+    transform: scale(1.045);
+  }
+
+  .competency-card:hover,
+  .motion-ready
+  .competency-card.reveal.is-visible:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--motion-shadow-soft);
+    border-color: #d3cfc6;
+  }
+
+  .competency-list li:hover {
+    color: var(--accent-hover);
+    padding-left: 4px;
+  }
+
+  .competency-list li:hover::before {
+    transform: scale(1.25);
+  }
+
+  .tool-group:hover,
+  .credential-panel:hover {
+    border-color: #d3cfc6;
+    box-shadow: var(--motion-shadow-soft);
+  }
+
+  .timeline-item:hover .timeline-company {
+    color: var(--accent-hover);
+  }
+
+  .credential-item:hover .credential-title {
+    color: var(--accent-hover);
+  }
+
+  .btn-primary:hover {
+    box-shadow:
+      0 8px 20px rgba(240, 100, 53, .2);
+  }
+
+  .social-link:hover {
+    transform: translateY(-2px);
+  }
+
+  .back-to-top:hover .back-to-top-icon {
+    transform: translateY(-3px);
+  }
+
+}
+
+
+/* ==================================================
+   16. TABLET OPTIMIZATION
+================================================== */
+
+@media (max-width: 900px) {
+
+  .hero-headline,
+  .hero h1 {
+    letter-spacing: -.045em;
+    line-height: 1.08;
+  }
+
+  .motion-ready .reveal {
+    transform: translateY(16px);
+  }
+
+  .motion-ready .reveal.is-visible {
+    transform: translateY(0);
+  }
+
+}
+
+
+/* ==================================================
+   17. MOBILE OPTIMIZATION
+================================================== */
+
+@media (max-width: 640px) {
+
+  .hero-headline,
+  .hero h1 {
+    letter-spacing: -.045em;
+    line-height: 1.1;
+  }
+
+  .section-title,
+  .contact-headline {
+    letter-spacing: -.04em;
+    line-height: 1.12;
+  }
+
+  .motion-ready .reveal {
+    transform: translateY(12px);
+
+    transition:
+      opacity 500ms var(--motion-ease),
+      transform 550ms var(--motion-ease);
+  }
+
+  .motion-ready .reveal.is-visible {
+    transform: translateY(0);
+  }
+
+  .motion-ready .mask-reveal {
+    transition-duration: 650ms;
+  }
+
+  .motion-ready .hero-line-inner {
+    animation-duration: 650ms;
+  }
+
+  .motion-ready .hero-avatar-wrap {
+    animation-duration: 650ms;
+  }
+
+  .motion-magnetic {
+    translate: none;
+  }
+
+}
+
+
+/* ==================================================
+   18. TOUCH DEVICES
+================================================== */
+
+@media (hover: none), (pointer: coarse) {
+
+  .motion-magnetic {
+    translate: none;
+  }
+
+  .work-card:hover,
+  .competency-card:hover,
+  .social-link:hover {
+    transform: none;
+  }
+
+  .work-card:hover .project-image,
+  .work-card:hover .work-visual img,
+  .hero-avatar-wrap:hover img {
+    transform: none;
+  }
+
+}
+
+
+/* ==================================================
+   19. KEYBOARD ACCESSIBILITY
+================================================== */
+
+.motion-ready .reveal:focus-within,
+.motion-ready .reveal-left:focus-within,
+.motion-ready .reveal-right:focus-within {
+  opacity: 1;
+  transform: none;
+}
+
+.motion-ready .reveal:focus-within
+.mask-reveal {
+  clip-path: none;
+}
+
+
+/* ==================================================
+   20. REDUCED MOTION
+================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+
+  .motion-ready .reveal,
+  .motion-ready .reveal-left,
+  .motion-ready .reveal-right,
+  .motion-ready .hero-line-inner,
+  .motion-ready .hero-avatar-wrap {
+    opacity: 1 !important;
+    transform: none !important;
+    translate: none !important;
+    scale: 1 !important;
+  }
+
+  .motion-ready .mask-reveal {
+    clip-path: none !important;
+  }
+
+  .motion-magnetic {
+    translate: none !important;
+  }
+
+}
+
+
+/* ==================================================
+   END OF MOTION STYLESHEET
+================================================== */
