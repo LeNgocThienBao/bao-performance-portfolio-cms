@@ -35,7 +35,7 @@
 
   <!-- Core Design System -->
 
-  <link rel="stylesheet" href="/portfolio.css?v=2">
+  <link rel="stylesheet" href="/portfolio.css?v=3">
 
   <!-- UI/UX & Motion Optimization -->
 
@@ -43,7 +43,13 @@
 
   <!-- Core CMS & Frontend Application -->
 
- <script src="/portfolio.js?v=3" defer></script>
+ <!-- Multilingual Translation Dictionary -->
+
+<script src="/translations.js?v=1" defer></script>
+
+<!-- Core CMS & Frontend Application -->
+
+<script src="/portfolio.js?v=3" defer></script>
 
   <!-- Advanced Motion & Interaction System -->
 
@@ -111,6 +117,37 @@
 
 
       <div class="nav-actions">
+
+        
+<!-- DESKTOP LANGUAGE SWITCHER -->
+
+<div
+  class="language-switcher language-switcher--desktop"
+  role="group"
+  aria-label="Language selection"
+>
+  <button
+    type="button"
+    data-language="en"
+    class="is-active"
+    aria-label="English"
+    aria-pressed="true"
+    lang="en"
+  >
+    EN
+  </button>
+
+  <button
+    type="button"
+    data-language="vi"
+    aria-label="Tiếng Việt"
+    aria-pressed="false"
+    lang="vi"
+  >
+    VI
+  </button>
+</div>
+
 
         <a class="btn btn-outline nav-contact" href="#contact">
 
@@ -218,6 +255,37 @@
       Download CV
       <span aria-hidden="true">↓</span>
     </a>
+
+    
+<!-- MOBILE LANGUAGE SWITCHER -->
+
+<div
+  class="language-switcher language-switcher--mobile"
+  role="group"
+  aria-label="Language selection"
+>
+  <button
+    type="button"
+    data-language="en"
+    class="is-active"
+    aria-label="English"
+    aria-pressed="true"
+    lang="en"
+  >
+    EN
+  </button>
+
+  <button
+    type="button"
+    data-language="vi"
+    aria-label="Tiếng Việt"
+    aria-pressed="false"
+    lang="vi"
+  >
+    VI
+  </button>
+</div>
+
 
   </nav>
 
