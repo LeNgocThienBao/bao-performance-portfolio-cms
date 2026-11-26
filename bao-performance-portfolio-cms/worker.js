@@ -294,6 +294,174 @@ async function validateMedia(value, env, kind = "image") {
 }
 
 
+// ==================================================
+// PORTFOLIO V2.1 - MULTILINGUAL CONTENT
+// ==================================================
+
+function cleanTranslationFields(value, fields) {
+  const result = {};
+
+  if (
+    !value ||
+    typeof value !== "object" ||
+    Array.isArray(value)
+  ) {
+    return result;
+  }
+
+  for (const [key, limit] of Object.entries(fields)) {
+    if (Object.hasOwn(value, key)) {
+      result[key] = cleanText(value[key], limit);
+    }
+  }
+
+  return result;
+}
+
+function cleanTranslationRecords(
+  value,
+  originals,
+  fields,
+  allowItems = false
+) {
+  if (!Array.isArray(value)) return [];
+
+  const records = [];
+  const ids = new Set(
+    originals.map(item => item.id)
+  );
+
+  const used = new Set();
+
+  for (const item of value) {
+    if (
+      !item ||
+      typeof item !== "object" ||
+      Array.isArray(item)
+    ) {
+      continue;
+    }
+
+    const id = cleanText(item.id, 100);
+
+    if (
+      !id ||
+      !ids.has(id) ||
+      used.has(id)
+    ) {
+      continue;
+    }
+
+    used.add(id);
+
+    const record = {
+      id,
+      ...cleanTranslationFields(item, fields)
+    };
+
+    if (
+      allowItems &&
+      Array.isArray(item.items)
+    ) {
+      record.items = cleanList(item.items);
+    }
+
+    records.push(record);
+  }
+
+  return records;
+}
+
+function sanitizeVietnameseContent(value, base) {
+  const vi = cleanTranslationFields(value, {
+    heroKicker: 180,
+    heroHeadline: 300,
+    heroLead: 2000,
+    heroPrimaryCTA: 100,
+    heroSecondaryCTA: 100,
+    jobTitle: 120,
+    experienceMeta: 180,
+    locationMeta: 180
+  });
+
+  vi.contact = cleanTranslationFields(
+    value.contact,
+    {
+      headline: 300,
+      description: 2000
+    }
+  );
+
+  vi.projects = cleanTranslationRecords(
+    value.projects,
+    base.projects,
+    {
+      title: 180,
+      description: 5000,
+      meta: 200,
+      category: 150,
+      role: 300,
+      results: 3000
+    }
+  );
+
+  vi.workExperience = cleanTranslationRecords(
+    value.workExperience,
+    base.workExperience,
+    {
+      position: 200,
+      period: 150,
+      location: 150,
+      description: 5000
+    }
+  );
+
+  vi.competencies = cleanTranslationRecords(
+    value.competencies,
+    base.competencies,
+    {
+      title: 200
+    },
+    true
+  );
+
+  vi.tools = cleanTranslationRecords(
+    value.tools,
+    base.tools,
+    {
+      title: 200
+    }
+  );
+
+  vi.education = cleanTranslationRecords(
+    value.education,
+    base.education,
+    {
+      school: 200,
+      degree: 200,
+      major: 200,
+      period: 150,
+      description: 2000
+    }
+  );
+
+  vi.certifications = cleanTranslationRecords(
+    value.certifications,
+    base.certifications,
+    {
+      title: 250,
+      date: 100,
+      description: 2000
+    }
+  );
+
+  return vi;
+}
+
+// END MULTILINGUAL CONTENT
+// ==================================================
+
+
 async function api(req, env, url) {
 
   // GET PORTFOLIO CONTENT
@@ -980,6 +1148,68 @@ try {
         50
       );
     }
+
+
+    // MULTILINGUAL CONTENT - V2.1
+
+    const existingVI =
+      existing.translations?.vi || {};
+
+    let vietnameseContent = existingVI;
+
+    if (has("translations")) {
+
+      const translations = data.translations;
+
+      if (
+        !translations ||
+        typeof translations !== "object" ||
+        Array.isArray(translations)
+      ) {
+        return json({
+          error: "Dữ liệu ngôn ngữ không hợp lệ."
+        }, 400);
+      }
+
+      if (Object.hasOwn(translations, "vi")) {
+
+        const vi = translations.vi;
+
+        if (
+          !vi ||
+          typeof vi !== "object" ||
+          Array.isArray(vi)
+        ) {
+          return json({
+            error: "Bản dịch tiếng Việt không hợp lệ."
+          }, 400);
+        }
+
+        vietnameseContent = {
+          ...existingVI,
+          ...vi
+        };
+
+        if (Object.hasOwn(vi, "contact")) {
+          vietnameseContent.contact = {
+            ...existingVI.contact,
+            ...vi.contact
+          };
+        }
+
+      }
+
+    }
+
+    clean.translations = {
+      vi: sanitizeVietnameseContent(
+        vietnameseContent,
+        clean
+      )
+    };
+
+    // END MULTILINGUAL CONTENT
+
 
     // Save content to D1
 
