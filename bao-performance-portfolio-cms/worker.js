@@ -26,6 +26,80 @@ const DEFAULT_CONTENT = {
   ]
 };
 
+
+const CMS_V2_DEFAULTS = {
+  schemaVersion: 2,
+
+  heroHeadline: "Performance first. Creative by instinct.",
+  heroPrimaryCTA: "Explore selected work",
+  heroSecondaryCTA: "A little about me",
+
+  avatar: "",
+  cvUrl: "",
+
+  contact: {
+    email: "",
+    phone: "",
+    linkedin: "",
+    website: "",
+    headline: "Let's work together.",
+    description: ""
+  },
+
+  workExperience: [],
+  competencies: [],
+  tools: [],
+  education: [],
+  certifications: []
+};
+
+function normalizeContent(saved = {}) {
+  return {
+    ...DEFAULT_CONTENT,
+    ...CMS_V2_DEFAULTS,
+    ...saved,
+
+    schemaVersion: 2,
+
+    contact: {
+      ...CMS_V2_DEFAULTS.contact,
+      ...(saved.contact || {})
+    },
+
+    projects: (
+      Array.isArray(saved.projects)
+        ? saved.projects
+        : DEFAULT_CONTENT.projects
+    ).map((project, index) => ({
+      id: `project-${index + 1}`,
+      title: "",
+      description: "",
+      image: "",
+      meta: "",
+      category: "",
+      role: "",
+      results: "",
+      link: "",
+      ...project
+    })),
+
+    workExperience: Array.isArray(saved.workExperience)
+      ? saved.workExperience : [],
+
+    competencies: Array.isArray(saved.competencies)
+      ? saved.competencies : [],
+
+    tools: Array.isArray(saved.tools)
+      ? saved.tools : [],
+
+    education: Array.isArray(saved.education)
+      ? saved.education : [],
+
+    certifications: Array.isArray(saved.certifications)
+      ? saved.certifications : []
+  };
+}
+
 const enc = new TextEncoder();
 
 function b64url(bytes) {
@@ -83,16 +157,21 @@ function json(data, status = 200) {
 }
 
 async function getContent(env) {
-  try {
-    const row = await env.DB.prepare(
-      "SELECT content FROM bao_portfolio_content_v2 WHERE id=1"
-    ).first();
+  if (!env.DB) {
+    throw new Error("D1 binding DB is unavailable.");
+  }
 
-    if (row?.content) return JSON.parse(row.content);
-  } catch (e) {}
+  const row = await env.DB.prepare(
+    "SELECT content FROM bao_portfolio_content_v2 WHERE id=1"
+  ).first();
 
-  return DEFAULT_CONTENT;
+  if (row?.content) {
+    return normalizeContent(JSON.parse(row.content));
+  }
+
+  return normalizeContent(DEFAULT_CONTENT);
 }
+
 
 // R2 MEDIA CONFIGURATION
 
@@ -118,8 +197,15 @@ async function api(req, env, url) {
     url.pathname === "/api/content" &&
     req.method === "GET"
   ) {
-    return json(await getContent(env));
-  }
+try {
+  return json(await getContent(env));
+} catch (error) {
+  console.error("CMS database:", error.message);
+
+  return json({
+    error: "Không thể đọc dữ liệu từ D1."
+  }, 503);
+}  }
 
   // ADMIN LOGIN
   if (
@@ -174,7 +260,7 @@ async function api(req, env, url) {
     url.pathname === "/api/logout" &&
     req.method === "POST"
   ) {
-    return new Response("", {
+    return new Response(null, {
       status: 204,
       headers: {
         "set-cookie":
