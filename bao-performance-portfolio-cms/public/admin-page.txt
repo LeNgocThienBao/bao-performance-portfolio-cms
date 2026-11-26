@@ -1,1116 +1,734 @@
 
-<!doctype html>
-<html lang="vi">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="robots" content="noindex,nofollow">
-<title>Quản trị Portfolio</title>
 
-<style>
-:root{
-  font-family:Inter,system-ui,sans-serif;
-  color:#22221f;
-  background:#f6f4f0;
-  --orange:#f06435;
-  --line:#dedbd4;
-  --muted:#74736e;
-}
+  <meta charset="UTF-8">
 
-*{box-sizing:border-box}
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
 
-body{margin:0}
+  <meta
+    name="robots"
+    content="noindex, nofollow, noarchive"
+  >
 
-.wrap{
-  max-width:1000px;
-  margin:40px auto;
-  padding:0 20px;
-}
+  <meta
+    name="theme-color"
+    content="#20221f"
+  >
 
-.top{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:16px;
-  margin-bottom:24px;
-}
+  <title>Portfolio Admin — Bao Le</title>
 
-h1{
-  font-size:clamp(28px,5vw,42px);
-  letter-spacing:-.06em;
-  margin:0;
-}
+  <link
+    rel="stylesheet"
+    href="/admin.css"
+  >
 
-h2{margin-top:0}
+  <script
+    src="/admin.js"
+    defer
+  ></script>
 
-p{
-  color:var(--muted);
-  line-height:1.5;
-}
-
-.panel{
-  background:#fffefa;
-  border:1px solid var(--line);
-  border-radius:20px;
-  padding:24px;
-  margin:16px 0;
-}
-
-.grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:16px;
-}
-
-.field{
-  display:flex;
-  flex-direction:column;
-  gap:7px;
-  margin:13px 0;
-}
-
-label{
-  font-size:13px;
-  font-weight:750;
-}
-
-input,textarea{
-  font:inherit;
-  width:100%;
-  padding:12px;
-  border:1px solid #d8d4cc;
-  border-radius:10px;
-  background:white;
-  color:#222;
-  outline-color:var(--orange);
-}
-
-textarea{
-  min-height:110px;
-  resize:vertical;
-}
-
-button,.button-link{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  border:0;
-  border-radius:999px;
-  padding:12px 18px;
-  background:var(--orange);
-  color:white;
-  font:inherit;
-  font-size:13px;
-  font-weight:750;
-  cursor:pointer;
-  text-decoration:none;
-}
-
-button.secondary,.button-link.secondary{
-  background:#252521;
-}
-
-button.outline{
-  background:white;
-  border:1px solid var(--line);
-  color:#22221f;
-}
-
-button.danger{
-  background:#fff0ec;
-  color:#b94026;
-}
-
-button:disabled{
-  opacity:.5;
-  cursor:wait;
-}
-
-.muted{font-size:12px}
-
-.hidden{display:none!important}
-
-.status{
-  padding:12px;
-  border-radius:10px;
-  background:#f2eee7;
-  font-size:13px;
-  margin-top:12px;
-  overflow-wrap:anywhere;
-}
-
-.status.success{
-  background:#e8f4eb;
-  color:#23683a;
-}
-
-.status.error{
-  background:#fff0ec;
-  color:#b94026;
-}
-
-.project{
-  border-top:1px solid #e6e1d8;
-  padding-top:20px;
-  margin-top:24px;
-}
-
-.project h3{
-  font-size:20px;
-  margin:0 0 18px;
-  letter-spacing:-.03em;
-}
-
-.project-grid{
-  display:grid;
-  grid-template-columns:1.15fr .85fr;
-  gap:24px;
-  align-items:start;
-}
-
-.media-panel{
-  background:#f6f4f0;
-  border:1px solid var(--line);
-  border-radius:16px;
-  padding:16px;
-}
-
-.media-title{
-  font-size:13px;
-  font-weight:750;
-  margin-bottom:12px;
-}
-
-.image-preview{
-  width:100%;
-  aspect-ratio:16/10;
-  border-radius:12px;
-  overflow:hidden;
-  background:#eae7e0;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  position:relative;
-  border:1px dashed #c9c4ba;
-}
-
-.image-preview img{
-  width:100%;
-  height:100%;
-  object-fit:contain;
-  display:block;
-}
-
-.placeholder{
-  text-align:center;
-  padding:20px;
-  color:var(--muted);
-  font-size:13px;
-}
-
-.placeholder-icon{
-  font-size:32px;
-  margin-bottom:8px;
-}
-
-.media-actions{
-  display:flex;
-  flex-wrap:wrap;
-  gap:8px;
-  margin-top:12px;
-}
-
-.media-actions button{
-  font-size:12px;
-  padding:10px 14px;
-}
-
-.media-note{
-  font-size:11px;
-  color:var(--muted);
-  margin:12px 0 0;
-}
-
-.save-panel{
-  position:sticky;
-  bottom:12px;
-  z-index:10;
-  box-shadow:0 8px 30px rgba(0,0,0,.08);
-}
-
-.top-actions{
-  display:flex;
-  flex-wrap:wrap;
-  gap:8px;
-}
-
-@media(max-width:650px){
-  .grid,.project-grid{
-    grid-template-columns:1fr;
-  }
-
-  .wrap{
-    margin:22px auto;
-  }
-
-  .panel{
-    padding:18px;
-  }
-
-  .top{
-    flex-wrap:wrap;
-  }
-}
-</style>
 </head>
 
 <body>
 
-<main class="wrap">
+  <!-- =====================================
+       01. LOGIN SCREEN
+  ====================================== -->
 
-  <div class="top">
-    <div>
-      <p class="muted">PORTFOLIO / CONTENT MANAGEMENT</p>
-      <h1>Quản trị portfolio</h1>
-    </div>
+  <section
+    id="loginPanel"
+    class="login-screen"
+  >
 
-    <div class="top-actions">
-      <a href="/" target="_blank" rel="noopener"
-         class="button-link secondary">
-        Xem website ↗
-      </a>
+    <div class="login-card">
 
-      <button id="logout" class="secondary hidden">
-        Đăng xuất
-      </button>
-    </div>
-  </div>
+      <div class="login-brand">
 
-  <!-- LOGIN -->
-
-  <section id="loginPanel" class="panel">
-
-    <h2>Đăng nhập quản trị</h2>
-
-    <p>
-      Đăng nhập bằng mật khẩu quản trị đã cấu hình
-      riêng trên Cloudflare.
-    </p>
-
-    <form id="loginForm">
-
-      <div class="field">
-        <label for="password">Mật khẩu quản trị</label>
-
-        <input
-          id="password"
-          type="password"
-          autocomplete="current-password"
-          required
-        >
-      </div>
-
-      <button id="loginButton">
-        Đăng nhập
-      </button>
-
-    </form>
-
-    <div id="loginStatus"
-         class="status hidden"
-         role="status">
-    </div>
-
-  </section>
-
-  <!-- EDITOR -->
-
-  <section id="editor" class="hidden">
-
-    <!-- PERSONAL INFORMATION -->
-
-    <div class="panel">
-
-      <h2>Thông tin cá nhân</h2>
-
-      <div class="grid">
-
-        <div class="field">
-          <label>Tên hiển thị</label>
-          <input data-key="name" maxlength="100">
+        <div class="brand-mark">
+          B.
         </div>
 
-        <div class="field">
-          <label>Chức danh</label>
-          <input data-key="jobTitle" maxlength="120">
-        </div>
+        <div>
 
-        <div class="field">
-          <label>Dòng giới thiệu ngắn</label>
-          <input data-key="heroKicker" maxlength="180">
-        </div>
+          <strong>
+            BAO PORTFOLIO
+          </strong>
 
-        <div class="field">
-          <label>Thông tin kinh nghiệm</label>
-          <input data-key="experienceMeta" maxlength="180">
-        </div>
+          <small>
+            CMS / VERSION 2
+          </small>
 
-        <div class="field">
-          <label>Địa điểm / lĩnh vực</label>
-          <input data-key="locationMeta" maxlength="180">
         </div>
 
       </div>
 
-      <div class="field">
-        <label>Giới thiệu chính</label>
-        <textarea
-          data-key="heroLead"
-          maxlength="1000">
-        </textarea>
-      </div>
+      <h1>Welcome back.</h1>
 
-    </div>
-
-    <!-- PROJECT MANAGEMENT -->
-
-    <div class="panel">
-
-      <h2>Kinh nghiệm & sản phẩm công việc</h2>
-
-      <p>
-        Quản lý nội dung và hình ảnh đại diện
-        của từng dự án trên Portfolio.
+      <p class="login-description">
+        Sign in to manage your portfolio,
+        professional profile and selected work.
       </p>
 
-      <div id="projects"></div>
+      <form id="loginForm">
 
-    </div>
+        <div class="field">
 
-    <!-- SAVE -->
+          <label for="password">
+            Admin password
+          </label>
 
-    <div class="panel save-panel">
+          <input
+            id="password"
+            name="password"
+            type="password"
+            placeholder="Enter your password"
+            autocomplete="current-password"
+            required
+          >
 
-      <button id="save">
-        Lưu thay đổi
-      </button>
+        </div>
 
-      <span class="muted">
-        Nội dung và hình ảnh được cập nhật
-        sau khi lưu.
-      </span>
+        <button
+          id="loginButton"
+          class="btn btn-primary btn-block"
+          type="submit"
+        >
+          Sign in
+        </button>
 
-      <div id="saveStatus"
-           class="status hidden"
-           role="status">
+        <div
+          id="loginStatus"
+          class="status hidden"
+          role="status"
+          aria-live="polite"
+        ></div>
+
+      </form>
+
+      <div class="login-footer">
+
+        <a href="/">
+          ← Back to portfolio
+        </a>
+
       </div>
 
     </div>
 
   </section>
 
-</main>
-
-<script>
 
-const $ = s => document.querySelector(s);
+  <!-- =====================================
+       02. ADMIN APPLICATION
+  ====================================== -->
 
-const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
+  <div
+    id="editor"
+    class="app-shell hidden"
+  >
 
-const ALLOWED_TYPES = [
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-  "image/gif"
-];
+    <!-- MOBILE SIDEBAR OVERLAY -->
 
-let activeUploads = 0;
-let saving = false;
-let dirty = false;
+    <div
+      id="sidebarOverlay"
+      class="sidebar-overlay"
+      aria-hidden="true"
+    ></div>
 
-function status(el, msg, type = "") {
-  el.textContent = msg;
-  el.className = "status";
 
-  if (type) {
-    el.classList.add(type);
-  }
-}
+    <!-- ===================================
+         03. SIDEBAR
+    ==================================== -->
 
-function markDirty() {
-  dirty = true;
-}
+    <aside
+      id="sidebar"
+      class="sidebar"
+    >
 
-function syncSaveButton() {
-  $("#save").disabled = saving || activeUploads > 0;
-}
+      <!-- BRAND -->
 
-function validMediaUrl(url) {
-  return /^\/api\/media\/[a-zA-Z0-9_-]+\.(jpg|png|webp|gif)$/
-    .test(url || "");
-}
+      <div class="sidebar-brand">
 
-function createButton(text, className = "") {
-  const button = document.createElement("button");
+        <div class="brand-mark">
+          B.
+        </div>
 
-  button.type = "button";
-  button.textContent = text;
-  button.className = className;
+        <div>
 
-  return button;
-}
+          <strong>
+            BAO PORTFOLIO
+          </strong>
 
-async function uploadImage(file) {
+          <small>
+            CMS / VERSION 2
+          </small>
 
-  if (!file) {
-    throw new Error("Bạn chưa chọn ảnh.");
-  }
+        </div>
 
-  if (!ALLOWED_TYPES.includes(file.type)) {
-    throw new Error(
-      "Chỉ hỗ trợ JPG, PNG, WebP và GIF."
-    );
-  }
+      </div>
+
+
+      <!-- NAVIGATION -->
+
+      <nav
+        class="sidebar-nav"
+        aria-label="Admin navigation"
+      >
+
+        <!-- WORKSPACE -->
+
+        <div class="nav-group">
 
-  if (
-    file.size === 0 ||
-    file.size > MAX_IMAGE_SIZE
-  ) {
-    throw new Error(
-      "Ảnh phải có dung lượng tối đa 5 MB."
-    );
-  }
+          <div class="nav-label">
+            Workspace
+          </div>
+
+          <button
+            type="button"
+            class="nav-item active"
+            data-section="overview"
+            aria-current="page"
+          >
+
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <rect x="3" y="3" width="7" height="7" rx="1"/>
+              <rect x="14" y="3" width="7" height="7" rx="1"/>
+              <rect x="3" y="14" width="7" height="7" rx="1"/>
+              <rect x="14" y="14" width="7" height="7" rx="1"/>
+            </svg>
+
+            <span>Overview</span>
+
+          </button>
+
+        </div>
 
-  const form = new FormData();
 
-  form.append("file", file);
+        <!-- WEBSITE CONTENT -->
+
+        <div class="nav-group">
 
-  const response = await fetch(
-    "/api/media/upload",
-    {
-      method: "POST",
-      body: form
-    }
-  );
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(
-      data.error || "Upload ảnh thất bại."
-    );
-  }
-
-  if (!validMediaUrl(data.url)) {
-    throw new Error(
-      "Đường dẫn ảnh trả về không hợp lệ."
-    );
-  }
-
-  return data.url;
-}
-
-function createMediaPanel(project, box) {
-
-  const panel = document.createElement("div");
-
-  panel.className = "media-panel";
-
-  const title = document.createElement("div");
-
-  title.className = "media-title";
-  title.textContent = "Hình ảnh đại diện";
-
-  const preview = document.createElement("div");
-
-  preview.className = "image-preview";
-
-  const image = document.createElement("img");
-
-  image.alt = project.title || "Ảnh dự án";
-  image.className = "hidden";
-
-  const placeholder = document.createElement("div");
-
-  placeholder.className = "placeholder";
-
-  placeholder.innerHTML =
-    '<div class="placeholder-icon">＋</div>' +
-    'Chưa có hình ảnh';
-
-  preview.append(image, placeholder);
-
-  const input = document.createElement("input");
-
-  input.type = "file";
-
-  input.accept =
-    "image/jpeg,image/png,image/webp,image/gif";
-
-  input.className = "hidden";
-
-  const imageValue = document.createElement("input");
-
-  imageValue.type = "hidden";
-  imageValue.dataset.field = "image";
-
-  imageValue.value = validMediaUrl(project.image)
-    ? project.image
-    : "";
-
-  const actions = document.createElement("div");
-
-  actions.className = "media-actions";
-
-  const uploadButton = createButton(
-    "Upload ảnh"
-  );
-
-  const removeButton = createButton(
-    "Gỡ ảnh",
-    "danger"
-  );
-
-  const note = document.createElement("p");
-
-  note.className = "media-note";
-
-  note.textContent =
-    "JPG, PNG, WebP, GIF · Tối đa 5 MB. " +
-    "Khuyến nghị ảnh ngang 1600 × 1000 px.";
-
-  const mediaStatus = document.createElement("div");
-
-  mediaStatus.className = "status hidden";
-
-  function renderPreview() {
-
-    if (imageValue.value) {
-
-      image.src = imageValue.value;
-
-      image.classList.remove("hidden");
-      placeholder.classList.add("hidden");
-
-      uploadButton.textContent = "Thay ảnh";
-      removeButton.classList.remove("hidden");
-
-    } else {
-
-      image.removeAttribute("src");
-
-      image.classList.add("hidden");
-      placeholder.classList.remove("hidden");
-
-      uploadButton.textContent = "Upload ảnh";
-      removeButton.classList.add("hidden");
-    }
-  }
-
-  image.addEventListener("error", () => {
-
-    status(
-      mediaStatus,
-      "Không tải được ảnh xem trước.",
-      "error"
-    );
-
-  });
-
-  uploadButton.addEventListener("click", () => {
-
-    if (!saving) {
-      input.click();
-    }
-
-  });
-
-  input.addEventListener("change", async () => {
-
-    const file = input.files[0];
-
-    if (!file || saving) {
-      input.value = "";
-      return;
-    }
-
-    activeUploads++;
-
-    uploadButton.disabled = true;
-    removeButton.disabled = true;
-
-    syncSaveButton();
-
-    status(
-      mediaStatus,
-      "Đang tải ảnh lên Cloudflare R2..."
-    );
-
-    try {
-
-      const url = await uploadImage(file);
-
-      imageValue.value = url;
-
-      renderPreview();
-
-      markDirty();
-
-      status(
-        mediaStatus,
-        "Upload thành công. Nhấn Lưu thay đổi để cập nhật website.",
-        "success"
-      );
-
-    } catch (error) {
-
-      status(
-        mediaStatus,
-        error.message,
-        "error"
-      );
-
-    } finally {
-
-      activeUploads--;
-
-      uploadButton.disabled = false;
-      removeButton.disabled = false;
-
-      input.value = "";
-
-      syncSaveButton();
-    }
-
-  });
-
-  removeButton.addEventListener("click", () => {
-
-    if (saving) return;
-
-    if (!confirm("Bạn muốn gỡ ảnh khỏi dự án này?")) {
-      return;
-    }
-
-    imageValue.value = "";
-
-    renderPreview();
-
-    markDirty();
-
-    status(
-      mediaStatus,
-      "Đã gỡ ảnh khỏi dự án. Nhấn Lưu thay đổi để xác nhận."
-    );
-
-  });
-
-  actions.append(
-    uploadButton,
-    removeButton
-  );
-
-  panel.append(
-    title,
-    preview,
-    input,
-    imageValue,
-    actions,
-    note,
-    mediaStatus
-  );
-
-  renderPreview();
-
-  return panel;
-}
-
-function showEditor(data) {
-
-  $("#loginPanel").classList.add("hidden");
-
-  $("#editor").classList.remove("hidden");
-
-  $("#logout").classList.remove("hidden");
-
-  document
-    .querySelectorAll("[data-key]")
-    .forEach(el => {
-
-      el.value = data[el.dataset.key] || "";
-
-    });
-
-  $("#projects").replaceChildren();
-
-  (data.projects || []).forEach((p, i) => {
-
-    const box = document.createElement("div");
-
-    box.className = "project";
-
-    const heading = document.createElement("h3");
-
-    heading.textContent = "Mục công việc " + (i + 1);
-
-    const grid = document.createElement("div");
-
-    grid.className = "project-grid";
-
-    const fields = document.createElement("div");
-
-    for (const [field, labelText] of [
-
-      ["title", "Tiêu đề"],
-
-      [
-        "description",
-        "Mô tả / vai trò / kết quả đã xác minh"
-      ]
-
-    ]) {
-
-      const label = document.createElement("label");
-
-      label.textContent = labelText;
-
-      const input = field === "title"
-        ? document.createElement("input")
-        : document.createElement("textarea");
-
-      input.dataset.project = i;
-      input.dataset.field = field;
-
-      input.maxLength = field === "title"
-        ? 180
-        : 1000;
-
-      input.value = p[field] || "";
-
-      const wrap = document.createElement("div");
-
-      wrap.className = "field";
-
-      wrap.append(label, input);
-
-      fields.append(wrap);
-
-    }
-
-    const mediaPanel = createMediaPanel(p, box);
-
-    grid.append(fields, mediaPanel);
-
-    box.append(heading, grid);
-
-    $("#projects").append(box);
-
-  });
-
-  dirty = false;
-}
-
-async function loadEditor() {
-
-  const response = await fetch(
-    "/api/content",
-    { cache: "no-store" }
-  );
-
-  if (!response.ok) {
-
-    throw new Error(
-      "Không tải được nội dung."
-    );
-
-  }
-
-  showEditor(await response.json());
-}
-
-async function checkSession() {
-
-  try {
-
-    const response = await fetch(
-      "/api/session",
-      { cache: "no-store" }
-    );
-
-    const data = await response.json();
-
-    if (data.authenticated) {
-
-      await loadEditor();
-
-    }
-
-  } catch (error) {
-
-    status(
-      $("#loginStatus"),
-      "Không kiểm tra được phiên đăng nhập.",
-      "error"
-    );
-
-  }
-}
-
-// LOGIN
-
-$("#loginForm").addEventListener(
-  "submit",
-  async event => {
-
-    event.preventDefault();
-
-    $("#loginButton").disabled = true;
-
-    try {
-
-      const response = await fetch(
-        "/api/login",
-        {
-          method: "POST",
-          headers: {
-            "content-type": "application/json"
-          },
-          body: JSON.stringify({
-            password: $("#password").value
-          })
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-
-        throw new Error(
-          data.error || "Không đăng nhập được."
-        );
-
-      }
-
-      $("#password").value = "";
-
-      await loadEditor();
-
-    } catch (error) {
-
-      status(
-        $("#loginStatus"),
-        error.message,
-        "error"
-      );
-
-    } finally {
-
-      $("#loginButton").disabled = false;
-
-    }
-
-  }
-);
-
-// TRACK UNSAVED CHANGES
-
-$("#editor").addEventListener(
-  "input",
-  event => {
-
-    if (event.target.type !== "file") {
-      markDirty();
-    }
-
-  }
-);
-
-// SAVE CONTENT
-
-$("#save").addEventListener(
-  "click",
-  async () => {
-
-    if (activeUploads > 0 || saving) return;
-
-    const data = {};
-
-    document
-      .querySelectorAll("[data-key]")
-      .forEach(el => {
-
-        data[el.dataset.key] = el.value;
-
-      });
-
-    data.projects = [
-
-      ...document.querySelectorAll(".project")
-
-    ].map(box => ({
-
-      title: box.querySelector(
-        '[data-field="title"]'
-      ).value,
-
-      description: box.querySelector(
-        '[data-field="description"]'
-      ).value,
-
-      image: box.querySelector(
-        '[data-field="image"]'
-      ).value
-
-    }));
-
-    saving = true;
-
-    syncSaveButton();
-
-    const controls = [
-      ...$("#editor").querySelectorAll(
-        "input, textarea, button"
-      )
-    ].filter(el => el.id !== "save");
-
-    const previousStates = controls.map(
-      el => el.disabled
-    );
-
-    controls.forEach(el => {
-      el.disabled = true;
-    });
-
-    $("#logout").disabled = true;
-
-    status(
-      $("#saveStatus"),
-      "Đang lưu nội dung và hình ảnh..."
-    );
-
-    try {
-
-      const response = await fetch(
-        "/api/content",
-        {
-          method: "PUT",
-          headers: {
-            "content-type": "application/json"
-          },
-          body: JSON.stringify(data)
-        }
-      );
-
-      const result = await response.json();
-
-      if (!response.ok) {
-
-        throw new Error(
-          result.error || "Lưu thất bại."
-        );
-
-      }
-
-      dirty = false;
-
-      status(
-        $("#saveStatus"),
-        "Đã lưu nội dung và hình ảnh thành công.",
-        "success"
-      );
-
-    } catch (error) {
-
-      status(
-        $("#saveStatus"),
-        error.message,
-        "error"
-      );
-
-    } finally {
-
-      saving = false;
-
-      controls.forEach((el, i) => {
-        el.disabled = previousStates[i];
-      });
-
-      $("#logout").disabled = false;
-
-      syncSaveButton();
-
-    }
-
-  }
-);
-
-// LOGOUT
-
-$("#logout").addEventListener(
-  "click",
-  async () => {
-
-    if (saving || activeUploads > 0) {
-      return;
-    }
-
-    if (
-      dirty &&
-      !confirm(
-        "Bạn có thay đổi chưa lưu. Vẫn muốn đăng xuất?"
-      )
-    ) {
-      return;
-    }
-
-    try {
-
-      const response = await fetch(
-        "/api/logout",
-        { method: "POST" }
-      );
-
-      if (!response.ok) {
-        throw new Error("Không đăng xuất được.");
-      }
-
-      dirty = false;
-
-      location.reload();
-
-    } catch (error) {
-
-      status(
-        $("#saveStatus"),
-        error.message,
-        "error"
-      );
-
-    }
-
-  }
-);
-
-// PREVENT ACCIDENTAL EXIT
-
-window.addEventListener(
-  "beforeunload",
-  event => {
-
-    if (dirty || activeUploads > 0 || saving) {
-
-      event.preventDefault();
-
-      event.returnValue = "";
-
-    }
-
-  }
-);
-
-checkSession();
-
-</script>
+          <div class="nav-label">
+            Website Content
+          </div>
+
+          <button
+            type="button"
+            class="nav-item"
+            data-section="personal"
+          >
+
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="8" r="4"/>
+              <path d="M4 21v-2a8 8 0 0 1 16 0v2"/>
+            </svg>
+
+            <span>
+              Personal Information
+            </span>
+
+          </button>
+
+
+          <button
+            type="button"
+            class="nav-item"
+            data-section="hero"
+          >
+
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <rect x="3" y="4" width="18" height="16" rx="2"/>
+              <path d="M3 9h18"/>
+              <path d="M7 13h7"/>
+              <path d="M7 16h10"/>
+            </svg>
+
+            <span>Hero Section</span>
+
+          </button>
+
+
+          <button
+            type="button"
+            class="nav-item"
+            data-section="projects"
+          >
+
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <rect x="3" y="7" width="18" height="14" rx="2"/>
+              <path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+              <path d="M3 13h18"/>
+              <path d="M10 13v2h4v-2"/>
+            </svg>
+
+            <span>Selected Work</span>
+
+          </button>
+
+        </div>
+
+
+        <!-- PROFESSIONAL PROFILE -->
+
+        <div class="nav-group">
+
+          <div class="nav-label">
+            Professional Profile
+          </div>
+
+          <button
+            type="button"
+            class="nav-item"
+            data-section="experience"
+          >
+
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="12" r="9"/>
+              <path d="M12 7v5l3 2"/>
+            </svg>
+
+            <span>Work Experience</span>
+
+          </button>
+
+
+          <button
+            type="button"
+            class="nav-item"
+            data-section="competencies"
+          >
+
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M12 2l3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1z"/>
+            </svg>
+
+            <span>Core Competencies</span>
+
+          </button>
+
+
+          <button
+            type="button"
+            class="nav-item"
+            data-section="tools"
+          >
+
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M8 6l-6 6 6 6"/>
+              <path d="M16 6l6 6-6 6"/>
+              <path d="M14 4l-4 16"/>
+            </svg>
+
+            <span>Tools &amp; Platforms</span>
+
+          </button>
+
+
+          <button
+            type="button"
+            class="nav-item"
+            data-section="education"
+          >
+
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M2 9l10-5 10 5-10 5z"/>
+              <path d="M6 11v6c3 3 9 3 12 0v-6"/>
+              <path d="M22 9v6"/>
+            </svg>
+
+            <span>Education</span>
+
+          </button>
+
+
+          <button
+            type="button"
+            class="nav-item"
+            data-section="certifications"
+          >
+
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="8" r="5"/>
+              <path d="M8 12l-2 9 6-3 6 3-2-9"/>
+            </svg>
+
+            <span>Certifications</span>
+
+          </button>
+
+        </div>
+
+
+        <!-- CONTACT & DOCUMENTS -->
+
+        <div class="nav-group">
+
+          <div class="nav-label">
+            Contact &amp; Documents
+          </div>
+
+          <button
+            type="button"
+            class="nav-item"
+            data-section="contact"
+          >
+
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <rect x="3" y="5" width="18" height="14" rx="2"/>
+              <path d="M3 7l9 6 9-6"/>
+            </svg>
+
+            <span>Contact &amp; Social</span>
+
+          </button>
+
+
+          <button
+            type="button"
+            class="nav-item"
+            data-section="cv"
+          >
+
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <path d="M14 2v6h6"/>
+              <path d="M8 13h8"/>
+              <path d="M8 17h8"/>
+            </svg>
+
+            <span>CV Management</span>
+
+          </button>
+
+        </div>
+
+      </nav>
+
+
+      <!-- SIDEBAR FOOTER -->
+
+      <div class="sidebar-footer">
+
+        <a
+          class="nav-item"
+          href="/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.7"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M13 5h6v6"/>
+            <path d="M19 5l-9 9"/>
+            <path d="M19 13v6H5V5h6"/>
+          </svg>
+
+          <span>View Portfolio</span>
+
+        </a>
+
+
+        <button
+          id="logout"
+          type="button"
+          class="nav-item"
+        >
+
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.7"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M10 17l5-5-5-5"/>
+            <path d="M15 12H3"/>
+            <path d="M14 3h5a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-5"/>
+          </svg>
+
+          <span>Sign out</span>
+
+        </button>
+
+        <div class="sidebar-version">
+          PORTFOLIO CMS · V2.0
+        </div>
+
+      </div>
+
+    </aside>
+
+
+    <!-- ===================================
+         04. MAIN WORKSPACE
+    ==================================== -->
+
+    <div class="main-area">
+
+      <!-- TOP HEADER -->
+
+      <header class="topbar">
+
+        <div class="topbar-left">
+
+          <button
+            id="menuToggle"
+            type="button"
+            class="menu-toggle"
+            aria-label="Toggle navigation"
+            aria-controls="sidebar"
+            aria-expanded="false"
+          >
+
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              aria-hidden="true"
+            >
+              <path d="M4 6h16"/>
+              <path d="M4 12h16"/>
+              <path d="M4 18h16"/>
+            </svg>
+
+          </button>
+
+          <div>
+
+            <div
+              id="currentSection"
+              class="topbar-title"
+            >
+              Overview
+            </div>
+
+            <div class="breadcrumb">
+              Portfolio / Content Management
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- HEADER ACTIONS -->
+
+        <div class="topbar-actions">
+
+          <span
+            id="saveIndicator"
+            class="save-indicator"
+            role="status"
+            aria-live="polite"
+          >
+            All changes saved
+          </span>
+
+          <a
+            href="/"
+            class="btn btn-outline"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            View website ↗
+          </a>
+
+          <button
+            id="save"
+            type="button"
+            class="btn btn-primary"
+            disabled
+          >
+            Save changes
+          </button>
+
+        </div>
+
+      </header>
+
+
+      <!-- DYNAMIC SECTION CONTENT -->
+
+      <main
+        id="sectionContent"
+        class="main-content"
+      >
+
+        <div class="loading-screen">
+
+          <span
+            class="spinner"
+            aria-hidden="true"
+          ></span>
+
+          <p>Loading portfolio content...</p>
+
+        </div>
+
+      </main>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================
+       05. TOAST NOTIFICATIONS
+  ====================================== -->
+
+  <div
+    id="toastContainer"
+    class="toast-container"
+    aria-live="polite"
+    aria-atomic="false"
+  ></div>
+
+
+  <!-- =====================================
+       06. JAVASCRIPT FALLBACK
+  ====================================== -->
+
+  <noscript>
+
+    <div class="notice warning">
+      JavaScript is required to use
+      Portfolio CMS. Please enable
+      JavaScript in your browser.
+    </div>
+
+  </noscript>
 
 </body>
 </html>
