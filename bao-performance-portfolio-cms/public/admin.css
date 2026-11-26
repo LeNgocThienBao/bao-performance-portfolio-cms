@@ -2213,3 +2213,169 @@ textarea[aria-invalid="true"] {
   }
 
 }
+
+/* =========================================
+   24. MULTILINGUAL CMS — V2.1
+========================================= */
+
+.admin-language-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+
+  padding: 18px 22px;
+  margin-bottom: 26px;
+
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+
+  box-shadow: var(--shadow);
+}
+
+.admin-language-heading {
+  flex: 1;
+  min-width: 0;
+}
+
+.admin-language-heading strong {
+  display: block;
+
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.admin-language-description {
+  margin-top: 4px;
+
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+
+/* Language switcher */
+
+.admin-language-switcher {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+
+  flex-shrink: 0;
+
+  padding: 4px;
+
+  background: var(--surface-soft);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+
+.admin-language-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 38px;
+  padding: 9px 16px;
+
+  background: transparent;
+  color: var(--muted);
+
+  border: 1px solid transparent;
+  border-radius: 7px;
+
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.4;
+
+  white-space: nowrap;
+  cursor: pointer;
+
+  transition:
+    background .18s ease,
+    color .18s ease,
+    border-color .18s ease,
+    box-shadow .18s ease;
+}
+
+.admin-language-button:hover:not(:disabled) {
+  background: var(--surface);
+  color: var(--text);
+}
+
+.admin-language-button.is-active,
+.admin-language-button.is-active:hover:not(:disabled) {
+  background: var(--orange-soft);
+  color: #b53e19;
+
+  border-color: rgba(240, 100, 53, .25);
+
+  box-shadow: 0 2px 6px rgba(20, 24, 18, .04);
+}
+
+.admin-language-button:focus-visible {
+  outline: 2px solid var(--orange);
+  outline-offset: 2px;
+}
+
+
+/* Vietnamese translation notice */
+
+.admin-language-note {
+  flex: 0 0 100%;
+  min-width: 0;
+
+  padding: 12px 14px;
+
+  background: var(--orange-soft);
+  color: #925033;
+
+  border-left: 3px solid var(--orange);
+  border-radius: var(--radius-sm);
+
+  font-size: 12px;
+  line-height: 1.7;
+
+  overflow-wrap: anywhere;
+}
+
+
+/* Responsive — Mobile */
+
+@media (max-width: 600px) {
+
+  .admin-language-panel {
+    flex-direction: column;
+    align-items: stretch;
+
+    gap: 12px;
+    padding: 16px;
+    margin-bottom: 20px;
+  }
+
+  .admin-language-switcher {
+    display: flex;
+    width: 100%;
+  }
+
+  .admin-language-button {
+    flex: 1;
+    min-width: 0;
+    min-height: 44px;
+
+    padding: 10px 8px;
+  }
+
+  .admin-language-note {
+    flex: auto;
+    font-size: 11px;
+  }
+
+}
+
+/* =========================================
+   END MULTILINGUAL CMS
+========================================= */
