@@ -1,169 +1,2544 @@
 
-(async () => {
+/* ==================================================
+   BAO LE — PERFORMANCE MARKETING PORTFOLIO
+   FRONTEND V2
+   CMS Integration & Interaction System
+================================================== */
 
-  // UPDATE TEXT CONTENT
+(() => {
 
-  const set = (id, value) => {
-    const el = document.getElementById(id);
+  "use strict";
 
-    if (el && typeof value === "string") {
-      el.textContent = value;
+
+  /* ==================================================
+     01. CONFIGURATION
+  ================================================== */
+
+  const CONFIG = {
+    api: "/api/content",
+    imagePattern:
+      /^\/api\/media\/[a-zA-Z0-9_-]+\.(jpg|jpeg|png|webp|gif)$/,
+    pdfPattern:
+      /^\/api\/media\/[a-zA-Z0-9_-]+\.pdf$/,
+    animationThreshold: 0.08,
+    mobileBreakpoint: 900
+  };
+
+  const $ = (id) => document.getElementById(id);
+
+  const $$ = (selector, root = document) =>
+    Array.from(root.querySelectorAll(selector));
+
+  const reducedMotion = window.matchMedia(
+    "(prefers-reduced-motion: reduce)"
+  );
+
+  let revealObserver = null;
+  let navigationObserver = null;
+
+
+  /* ==================================================
+     02. GENERAL UTILITIES
+  ================================================== */
+
+  function text(value, fallback = "") {
+
+    return typeof value === "string"
+      ? value.trim() || fallback
+      : fallback;
+
+  }
+
+
+  function array(value) {
+
+    return Array.isArray(value)
+      ? value.filter(
+          item => item &&
+          typeof item === "object"
+        )
+      : [];
+
+  }
+
+
+  function setText(id, value) {
+
+    const element = $(id);
+
+    if (!element) return;
+
+    if (typeof value === "string") {
+      element.textContent = value;
     }
-  };
 
-  // VALIDATE IMAGE URL
+  }
 
-  const validImageUrl = value => {
-    return typeof value === "string" &&
-      /^\/api\/media\/[a-zA-Z0-9_-]+\.(jpg|png|webp|gif)$/
-        .test(value);
-  };
 
-  // UPDATE PROJECT IMAGE
+  function setVisible(target, visible) {
 
-  const setProjectImage = (index, project) => {
+    const element =
+      typeof target === "string"
+        ? $(target)
+        : target;
 
-    const title = document.getElementById(
-      `project${index + 1}Title`
+    if (!element) return;
+
+    element.hidden = !visible;
+
+    element.classList.toggle(
+      "hidden",
+      !visible
     );
 
-    if (!title) return;
+  }
 
-    const card = title.closest(".work-card");
 
-    if (!card) return;
+  function create(
+    tag,
+    className = "",
+    content = ""
+  ) {
 
-    const visual = card.querySelector(".work-visual");
+    const element =
+      document.createElement(tag);
 
-    if (!visual) return;
+    if (className) {
+      element.className = className;
+    }
 
-    // Remove previous image if available
+    if (content !== "") {
+      element.textContent = content;
+    }
 
-    visual.querySelectorAll(".project-image")
-      .forEach(img => img.remove());
+    return element;
 
-    visual.classList.remove("has-image");
+  }
 
-    // Original visual elements
 
-    const originalElements = [
-      ...visual.children
-    ];
+  function appendText(
+    parent,
+    tag,
+    className,
+    value
+  ) {
 
-    originalElements.forEach(el => {
-      el.style.removeProperty("display");
+    const content = text(value);
+
+    if (!content) return null;
+
+    const element = create(
+      tag,
+      className,
+      content
+    );
+
+    parent.appendChild(element);
+
+    return element;
+
+  }
+
+
+  function formatIndex(index) {
+
+    return String(index + 1)
+      .padStart(2, "0");
+
+  }
+
+
+  function validImage(value) {
+
+    return typeof value === "string" &&
+      CONFIG.imagePattern.test(value);
+
+  }
+
+
+  function validPDF(value) {
+
+    return typeof value === "string" &&
+      CONFIG.pdfPattern.test(value);
+
+  }
+
+
+  function safeLink(value) {
+
+    if (typeof value !== "string") {
+      return "";
+    }
+
+    try {
+
+      const url = new URL(value);
+
+      if (
+        url.protocol !== "https:" &&
+        url.protocol !== "http:"
+      ) {
+        return "";
+      }
+
+      return url.href;
+
+    } catch {
+
+      return "";
+
+    }
+
+  }
+
+
+  function createExternalLink(
+    label,
+    url,
+    className = ""
+  ) {
+
+    const href = safeLink(url);
+
+    if (!href) return null;
+
+    const link = create(
+      "a",
+      className,
+      label
+    );
+
+    link.href = href;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+
+    return link;
+
+  }
+
+
+  function createArrow(symbol = "↗") {
+
+    const arrow = create(
+      "span",
+      "btn-arrow",
+      symbol
+    );
+
+    arrow.setAttribute(
+      "aria-hidden",
+      "true"
+    );
+
+    return arrow;
+
+  }
+
+
+  function setButtonLabel(id, value) {
+
+    const button = $(id);
+
+    if (!button || !text(value)) return;
+
+    const label = button.querySelector(
+      "[data-label]"
+    );
+
+    if (label) {
+
+      label.textContent = value;
+
+    } else {
+
+      const arrow = button.querySelector(
+        ".btn-arrow, .button-arrow"
+      );
+
+      button.textContent = value;
+
+      if (arrow) {
+        button.appendChild(arrow);
+      }
+
+    }
+
+  }
+
+
+  function replaceContent(
+    container,
+    fragment
+  ) {
+
+    if (!container) return;
+
+    container.replaceChildren(fragment);
+
+  }
+
+
+  /* ==================================================
+     03. PERSONAL INFORMATION
+  ================================================== */
+
+  function renderPersonal(data) {
+
+    const name = text(data.name);
+
+    const jobTitle = text(
+      data.jobTitle
+    );
+
+    const experience = text(
+      data.experienceMeta
+    );
+
+    const location = text(
+      data.locationMeta
+    );
+
+    if (name) {
+
+      setText("brandName", name);
+      setText("footerName", name);
+      setText("profileName", name);
+
+      document.title = jobTitle
+        ? `${name} — ${jobTitle}`
+        : `${name} — Portfolio`;
+
+    }
+
+    setText("jobTitle", jobTitle);
+
+    setText(
+      "experienceMeta",
+      experience
+    );
+
+    setText(
+      "locationMeta",
+      location
+    );
+
+    setText(
+      "footerJobTitle",
+      jobTitle
+    );
+
+    setText(
+      "aboutJobTitle",
+      jobTitle
+    );
+
+    setText(
+      "aboutLocation",
+      location
+    );
+
+    setText(
+      "aboutExperience",
+      experience
+    );
+
+    setText(
+      "footerYear",
+      String(new Date().getFullYear())
+    );
+
+    const metaDescription =
+      document.querySelector(
+        'meta[name="description"]'
+      );
+
+    if (
+      metaDescription &&
+      text(data.heroLead)
+    ) {
+
+      metaDescription.setAttribute(
+        "content",
+        text(data.heroLead).slice(0, 160)
+      );
+
+    }
+
+  }
+
+
+  /* ==================================================
+     04. HERO HEADLINE
+  ================================================== */
+
+  function renderHeadline(value) {
+
+    const headline = $("heroHeadline");
+
+    const content = text(value);
+
+    if (!headline || !content) return;
+
+    const lines = content
+      .split(/\r?\n/)
+      .map(line => line.trim())
+      .filter(Boolean);
+
+    const fragment =
+      document.createDocumentFragment();
+
+    lines.forEach((line) => {
+
+      const wrapper = create(
+        "span",
+        "hero-line"
+      );
+
+      const inner = create(
+        "span",
+        "hero-line-inner"
+      );
+
+      /*
+         Highlight punctuation using
+         safe DOM nodes, not innerHTML.
+      */
+
+      const parts = line.split(/([.!?])/);
+
+      parts.forEach(part => {
+
+        if (/^[.!?]$/.test(part)) {
+
+          inner.appendChild(
+            create(
+              "span",
+              "accent",
+              part
+            )
+          );
+
+        } else {
+
+          inner.appendChild(
+            document.createTextNode(part)
+          );
+
+        }
+
+      });
+
+      wrapper.appendChild(inner);
+
+      fragment.appendChild(wrapper);
+
     });
 
-    // Keep original design if no image exists
+    headline.replaceChildren(fragment);
 
-    if (!validImageUrl(project.image)) return;
+  }
 
-    const image = document.createElement("img");
 
-    image.className = "project-image";
+  /* ==================================================
+     05. PROFILE AVATAR
+  ================================================== */
 
-    image.alt =
-      project.title || `Portfolio project ${index + 1}`;
+  function renderAvatar(data) {
 
-    image.loading = "lazy";
+    const image = $("heroAvatar");
+
+    const placeholder =
+      $("avatarPlaceholder");
+
+    const photoLabel =
+      $("heroPhotoLabel");
+
+    if (!image) return;
+
+    const name = text(
+      data.name,
+      "Portfolio"
+    );
+
+    const initial =
+      Array.from(name)[0] || "B";
+
+    if (placeholder) {
+
+      placeholder.textContent =
+        initial.toUpperCase();
+
+    }
+
+    function showPlaceholder() {
+
+      setVisible(image, false);
+
+      setVisible(
+        placeholder,
+        true
+      );
+
+      setVisible(
+        photoLabel,
+        false
+      );
+
+    }
+
+    function showImage() {
+
+      setVisible(image, true);
+
+      setVisible(
+        placeholder,
+        false
+      );
+
+      setVisible(
+        photoLabel,
+        true
+      );
+
+    }
+
+    image.onload = null;
+    image.onerror = null;
+
+    if (!validImage(data.avatar)) {
+
+      image.removeAttribute("src");
+
+      showPlaceholder();
+
+      return;
+
+    }
+
+    showPlaceholder();
+
+    image.alt = `${name} — Profile portrait`;
+
     image.decoding = "async";
 
-    // Display uploaded image after successful loading
+    image.loading = "eager";
 
-    image.addEventListener("load", () => {
+    image.onload = showImage;
 
-      originalElements.forEach(el => {
-        el.style.display = "none";
-      });
+    image.onerror = showPlaceholder;
 
-      visual.classList.add("has-image");
+    image.src = data.avatar;
 
-      image.style.zIndex = "2";
+    if (
+      image.complete &&
+      image.naturalWidth > 0
+    ) {
 
-    });
+      showImage();
 
-    // Restore original design if image cannot load
+    }
 
-    image.addEventListener("error", () => {
+  }
 
-      image.remove();
 
-      visual.classList.remove("has-image");
+  /* ==================================================
+     06. HERO CONTENT
+  ================================================== */
 
-      originalElements.forEach(el => {
-        el.style.removeProperty("display");
-      });
+  function renderHero(data) {
 
-    });
-
-    visual.prepend(image);
-
-    image.src = project.image;
-
-  };
-
-  // LOAD CMS CONTENT
-
-  try {
-
-    const response = await fetch(
-      "/api/content",
-      {
-        cache: "no-store"
-      }
+    setText(
+      "heroKicker",
+      text(data.heroKicker)
     );
 
-    if (!response.ok) return;
+    setText(
+      "heroLead",
+      text(data.heroLead)
+    );
 
-    const data = await response.json();
+    renderHeadline(
+      data.heroHeadline
+    );
 
-    // Personal information
+    setButtonLabel(
+      "heroPrimaryCTA",
+      text(
+        data.heroPrimaryCTA,
+        "Explore selected work"
+      )
+    );
 
-    set("brandName", data.name);
-    set("footerName", data.name);
-    set("heroKicker", data.heroKicker);
-    set("heroLead", data.heroLead);
-    set("jobTitle", data.jobTitle);
-    set("experienceMeta", data.experienceMeta);
-    set("locationMeta", data.locationMeta);
+    setButtonLabel(
+      "heroSecondaryCTA",
+      text(
+        data.heroSecondaryCTA,
+        "A little about me"
+      )
+    );
 
-    // Project content and images
+    renderAvatar(data);
 
-    (data.projects || []).forEach((project, index) => {
+  }
 
-      set(
-        `project${index + 1}Title`,
-        project.title
+
+  /* ==================================================
+     07. ABOUT SECTION
+  ================================================== */
+
+  function renderAbout(data) {
+
+    const aboutLead = $("aboutLead");
+
+    if (
+      aboutLead &&
+      text(data.heroLead)
+    ) {
+
+      aboutLead.textContent =
+        data.heroLead;
+
+    }
+
+  }
+
+
+  /* ==================================================
+     08. PROJECT IMAGE COMPONENT
+  ================================================== */
+
+  function createProjectVisual(
+    project,
+    index
+  ) {
+
+    const visual = create(
+      "div",
+      "work-visual mask-reveal"
+    );
+
+    const placeholder = create(
+      "div",
+      "work-placeholder"
+    );
+
+    placeholder.setAttribute(
+      "aria-hidden",
+      "true"
+    );
+
+    placeholder.appendChild(
+
+      create(
+        "span",
+        "work-placeholder-number",
+        formatIndex(index)
+      )
+
+    );
+
+    visual.appendChild(placeholder);
+
+    const number = create(
+      "span",
+      "work-index",
+      formatIndex(index)
+    );
+
+    number.setAttribute(
+      "aria-hidden",
+      "true"
+    );
+
+    visual.appendChild(number);
+
+    if (validImage(project.image)) {
+
+      const image = create(
+        "img",
+        "project-image"
       );
 
-      set(
-        `project${index + 1}Desc`,
-        project.description
+      image.alt = text(
+        project.title,
+        "Portfolio project"
       );
 
-      if (typeof project.meta === "string") {
+      image.loading = "lazy";
 
-        set(
-          `project${index + 1}Meta`,
+      image.decoding = "async";
+
+      image.hidden = true;
+
+      function showImage() {
+
+        image.hidden = false;
+
+        placeholder.hidden = true;
+
+        visual.classList.add(
+          "has-image"
+        );
+
+      }
+
+      image.onload = showImage;
+
+      image.onerror = () => {
+
+        image.remove();
+
+        placeholder.hidden = false;
+
+        visual.classList.remove(
+          "has-image"
+        );
+
+      };
+
+      visual.insertBefore(
+        image,
+        number
+      );
+
+      image.src = project.image;
+
+      if (
+        image.complete &&
+        image.naturalWidth > 0
+      ) {
+
+        showImage();
+
+      }
+
+    }
+
+    return visual;
+
+  }
+
+
+  /* ==================================================
+     09. PROJECT CARD COMPONENT
+  ================================================== */
+
+  function createProjectCard(
+    project,
+    index
+  ) {
+
+    const card = create(
+      "article",
+      "work-card reveal"
+    );
+
+    if (text(project.id)) {
+
+      card.dataset.projectId =
+        project.id;
+
+    }
+
+    card.appendChild(
+
+      createProjectVisual(
+        project,
+        index
+      )
+
+    );
+
+    const info = create(
+      "div",
+      "work-info"
+    );
+
+    const metadata = [
+
+      text(project.category),
+
+      text(project.meta)
+
+    ].filter(Boolean);
+
+    const uniqueMetadata = [
+      ...new Set(metadata)
+    ];
+
+    appendText(
+      info,
+      "div",
+      "work-meta",
+      uniqueMetadata.join(" · ")
+    );
+
+    appendText(
+      info,
+      "h3",
+      "work-title",
+      text(
+        project.title,
+        "Untitled project"
+      )
+    );
+
+    appendText(
+      info,
+      "p",
+      "work-description",
+      project.description
+    );
+
+
+    /* PROJECT ROLE */
+
+    if (text(project.role)) {
+
+      const role = create(
+        "div",
+        "work-role"
+      );
+
+      role.appendChild(
+
+        create(
+          "span",
+          "work-role-label",
+          "My role"
+        )
+
+      );
+
+      role.appendChild(
+
+        create(
+          "span",
+          "work-role-value",
+          project.role
+        )
+
+      );
+
+      info.appendChild(role);
+
+    }
+
+
+    /* RESULTS & ACHIEVEMENTS */
+
+    if (text(project.results)) {
+
+      const results = create(
+        "div",
+        "work-results"
+      );
+
+      results.appendChild(
+
+        create(
+          "span",
+          "work-results-label",
+          "Results & achievements"
+        )
+
+      );
+
+      results.appendChild(
+
+        create(
+          "p",
+          "",
+          project.results
+        )
+
+      );
+
+      info.appendChild(results);
+
+    }
+
+
+    /* PROJECT URL */
+
+    const link = createExternalLink(
+      "View project",
+      project.link,
+      "work-link"
+    );
+
+    if (link) {
+
+      const footer = create(
+        "div",
+        "work-foot"
+      );
+
+      link.appendChild(
+        createArrow()
+      );
+
+      footer.appendChild(link);
+
+      info.appendChild(footer);
+
+    }
+
+    card.appendChild(info);
+
+    return card;
+
+  }
+
+
+  /* ==================================================
+     10. LEGACY PROJECT COMPATIBILITY
+
+     Keep the current index.html working
+     until the new frontend is deployed.
+  ================================================== */
+
+  function renderLegacyProjects(projects) {
+
+    for (let index = 0; index < 4; index++) {
+
+      const project = projects[index];
+
+      const number = index + 1;
+
+      const title = $(
+        `project${number}Title`
+      );
+
+      if (!title) continue;
+
+      const card = title.closest(
+        ".work-card"
+      );
+
+      if (!card) continue;
+
+      if (!project) {
+
+        setVisible(card, false);
+
+        continue;
+
+      }
+
+      setVisible(card, true);
+
+      setText(
+        `project${number}Title`,
+        text(project.title)
+      );
+
+      setText(
+        `project${number}Desc`,
+        text(project.description)
+      );
+
+      if (text(project.meta)) {
+
+        setText(
+          `project${number}Meta`,
           project.meta
         );
 
       }
 
-      setProjectImage(index, project);
+      const visual = card.querySelector(
+        ".work-visual"
+      );
 
-    });
+      if (!visual) continue;
 
-  } catch (error) {
+      visual.querySelectorAll(
+        ".project-image"
+      ).forEach(image => image.remove());
 
-    // Keep original static content visible
-    // if the CMS is temporarily unavailable.
+      visual.classList.remove(
+        "has-image"
+      );
 
-    console.warn(
-      "Portfolio CMS:",
-      error.message
+      Array.from(
+        visual.children
+      ).forEach(child => {
+
+        child.style.display = "";
+
+      });
+
+      if (!validImage(project.image)) {
+        continue;
+      }
+
+      const image = create(
+        "img",
+        "project-image"
+      );
+
+      image.alt = text(
+        project.title,
+        "Portfolio project"
+      );
+
+      image.loading = "lazy";
+
+      image.decoding = "async";
+
+      image.style.display = "none";
+
+      image.onload = () => {
+
+        Array.from(
+          visual.children
+        ).forEach(child => {
+
+          if (child !== image) {
+
+            child.style.display =
+              "none";
+
+          }
+
+        });
+
+        image.style.display = "block";
+
+        image.style.zIndex = "2";
+
+        visual.classList.add(
+          "has-image"
+        );
+
+      };
+
+      image.onerror = () => {
+
+        image.remove();
+
+        visual.classList.remove(
+          "has-image"
+        );
+
+        Array.from(
+          visual.children
+        ).forEach(child => {
+
+          child.style.display = "";
+
+        });
+
+      };
+
+      visual.prepend(image);
+
+      image.src = project.image;
+
+    }
+
+  }
+
+
+  /* ==================================================
+     11. RENDER SELECTED WORK
+  ================================================== */
+
+  function renderProjects(data) {
+
+    const projects = array(
+      data.projects
+    );
+
+    const grid = $("projectsGrid");
+
+    /*
+       The new HTML will contain
+       id="projectsGrid".
+
+       Until then, use legacy rendering.
+    */
+
+    if (!grid) {
+
+      renderLegacyProjects(projects);
+
+      return;
+
+    }
+
+    const fragment =
+      document.createDocumentFragment();
+
+    projects.forEach(
+      (project, index) => {
+
+        fragment.appendChild(
+
+          createProjectCard(
+            project,
+            index
+          )
+
+        );
+
+      }
+    );
+
+    replaceContent(
+      grid,
+      fragment
+    );
+
+    setVisible(
+      "work",
+      projects.length > 0
+    );
+
+    setText(
+      "projectCount",
+      String(projects.length)
+        .padStart(2, "0")
     );
 
   }
 
+
+  /* ==================================================
+     12. WORK EXPERIENCE
+  ================================================== */
+
+  function renderExperience(data) {
+
+    const records = array(
+      data.workExperience
+    );
+
+    const timeline =
+      $("experienceTimeline");
+
+    if (!timeline) return;
+
+    const fragment =
+      document.createDocumentFragment();
+
+    records.forEach(record => {
+
+      const item = create(
+        "article",
+        "timeline-item reveal"
+      );
+
+      const dot = create(
+        "span",
+        "timeline-dot"
+      );
+
+      dot.setAttribute(
+        "aria-hidden",
+        "true"
+      );
+
+      item.appendChild(dot);
+
+      appendText(
+        item,
+        "div",
+        "timeline-period",
+        record.period
+      );
+
+      appendText(
+        item,
+        "h3",
+        "timeline-company",
+        record.company
+      );
+
+      appendText(
+        item,
+        "div",
+        "timeline-position",
+        record.position
+      );
+
+      appendText(
+        item,
+        "div",
+        "timeline-location",
+        record.location
+      );
+
+      appendText(
+        item,
+        "p",
+        "timeline-description",
+        record.description
+      );
+
+      fragment.appendChild(item);
+
+    });
+
+    replaceContent(
+      timeline,
+      fragment
+    );
+
+    setVisible(
+      "experience",
+      records.length > 0
+    );
+
+  }
+
+
+  /* ==================================================
+     13. CORE COMPETENCIES
+  ================================================== */
+
+  function renderCompetencies(data) {
+
+    const groups = array(
+      data.competencies
+    );
+
+    const grid =
+      $("competenciesGrid");
+
+    if (!grid) return;
+
+    const fragment =
+      document.createDocumentFragment();
+
+    let count = 0;
+
+    groups.forEach((group, index) => {
+
+      const items = Array.isArray(
+        group.items
+      )
+        ? group.items
+            .map(item => text(item))
+            .filter(Boolean)
+        : [];
+
+      if (
+        !text(group.title) &&
+        !items.length
+      ) {
+        return;
+      }
+
+      const card = create(
+        "article",
+        "competency-card reveal"
+      );
+
+      card.appendChild(
+
+        create(
+          "span",
+          "competency-number",
+          formatIndex(index)
+        )
+
+      );
+
+      appendText(
+        card,
+        "h3",
+        "competency-title",
+        group.title
+      );
+
+      const list = create(
+        "ul",
+        "competency-list"
+      );
+
+      items.forEach(item => {
+
+        list.appendChild(
+
+          create(
+            "li",
+            "",
+            item
+          )
+
+        );
+
+      });
+
+      card.appendChild(list);
+
+      fragment.appendChild(card);
+
+      count += 1;
+
+    });
+
+    replaceContent(
+      grid,
+      fragment
+    );
+
+    setVisible(
+      "competencies",
+      count > 0
+    );
+
+  }
+
+
+  /* ==================================================
+     14. TOOLS & PLATFORMS
+  ================================================== */
+
+  function renderTools(data) {
+
+    const groups = array(data.tools);
+
+    const grid = $("toolsGrid");
+
+    if (!grid) return;
+
+    const fragment =
+      document.createDocumentFragment();
+
+    let count = 0;
+
+    groups.forEach(group => {
+
+      const items = Array.isArray(
+        group.items
+      )
+        ? group.items
+            .map(item => text(item))
+            .filter(Boolean)
+        : [];
+
+      if (
+        !text(group.title) &&
+        !items.length
+      ) {
+        return;
+      }
+
+      const card = create(
+        "article",
+        "tool-group reveal"
+      );
+
+      appendText(
+        card,
+        "h3",
+        "tool-group-title",
+        group.title
+      );
+
+      const cloud = create(
+        "div",
+        "tool-cloud"
+      );
+
+      items.forEach(item => {
+
+        cloud.appendChild(
+
+          create(
+            "span",
+            "tool-chip",
+            item
+          )
+
+        );
+
+      });
+
+      card.appendChild(cloud);
+
+      fragment.appendChild(card);
+
+      count += 1;
+
+    });
+
+    replaceContent(
+      grid,
+      fragment
+    );
+
+    setVisible(
+      "tools",
+      count > 0
+    );
+
+  }
+
+
+  /* ==================================================
+     15. EDUCATION
+  ================================================== */
+
+  function renderEducation(data) {
+
+    const records = array(
+      data.education
+    );
+
+    const list = $("educationList");
+
+    if (!list) return;
+
+    const fragment =
+      document.createDocumentFragment();
+
+    records.forEach(record => {
+
+      const item = create(
+        "article",
+        "credential-item"
+      );
+
+      appendText(
+        item,
+        "div",
+        "credential-period",
+        record.period
+      );
+
+      appendText(
+        item,
+        "h4",
+        "credential-title",
+        record.school
+      );
+
+      appendText(
+        item,
+        "div",
+        "credential-subtitle",
+        record.degree
+      );
+
+      appendText(
+        item,
+        "div",
+        "credential-major",
+        record.major
+      );
+
+      appendText(
+        item,
+        "p",
+        "credential-description",
+        record.description
+      );
+
+      fragment.appendChild(item);
+
+    });
+
+    replaceContent(
+      list,
+      fragment
+    );
+
+    setVisible(
+      "educationPanel",
+      records.length > 0
+    );
+
+  }
+
+
+  /* ==================================================
+     16. CERTIFICATIONS
+  ================================================== */
+
+  function renderCertifications(data) {
+
+    const records = array(
+      data.certifications
+    );
+
+    const list =
+      $("certificationsList");
+
+    if (!list) return;
+
+    const fragment =
+      document.createDocumentFragment();
+
+    records.forEach(record => {
+
+      const item = create(
+        "article",
+        "credential-item"
+      );
+
+      appendText(
+        item,
+        "div",
+        "credential-date",
+        record.date
+      );
+
+      appendText(
+        item,
+        "h4",
+        "credential-title",
+        record.title
+      );
+
+      appendText(
+        item,
+        "div",
+        "credential-subtitle",
+        record.issuer
+      );
+
+      appendText(
+        item,
+        "p",
+        "credential-description",
+        record.description
+      );
+
+      fragment.appendChild(item);
+
+    });
+
+    replaceContent(
+      list,
+      fragment
+    );
+
+    setVisible(
+      "certificationsPanel",
+      records.length > 0
+    );
+
+  }
+
+
+  function renderCredentials(data) {
+
+    renderEducation(data);
+
+    renderCertifications(data);
+
+    const hasEducation =
+      array(data.education).length > 0;
+
+    const hasCertifications =
+      array(data.certifications).length > 0;
+
+    setVisible(
+      "credentials",
+      hasEducation ||
+      hasCertifications
+    );
+
+  }
+
+
+  /* ==================================================
+     17. CONTACT INFORMATION
+  ================================================== */
+
+  function createContactItem(
+    label,
+    value,
+    href
+  ) {
+
+    const item = create(
+      "div",
+      "contact-item"
+    );
+
+    item.appendChild(
+
+      create(
+        "span",
+        "contact-label",
+        label
+      )
+
+    );
+
+    const link = create(
+      "a",
+      "contact-value",
+      value
+    );
+
+    link.href = href;
+
+    item.appendChild(link);
+
+    return item;
+
+  }
+
+
+  function renderContact(data) {
+
+    const contact =
+      data.contact &&
+      typeof data.contact === "object"
+        ? data.contact
+        : {};
+
+    setText(
+      "contactHeadline",
+      text(
+        contact.headline,
+        "Let's work together."
+      )
+    );
+
+    setText(
+      "contactDescription",
+      text(contact.description)
+    );
+
+    const details =
+      $("contactDetails");
+
+    const email = text(contact.email);
+
+    const phone = text(contact.phone);
+
+    const validEmail =
+      /^[^\s@?&#]+@[^\s@?&#]+\.[^\s@?&#]+$/
+        .test(email);
+
+    const cleanPhone = phone.replace(
+      /[^\d+]/g,
+      ""
+    );
+
+    const validPhone =
+      /^\+?\d{5,20}$/.test(cleanPhone);
+
+    if (details) {
+
+      const fragment =
+        document.createDocumentFragment();
+
+      if (validEmail) {
+
+        fragment.appendChild(
+
+          createContactItem(
+            "Email",
+            email,
+            `mailto:${email}`
+          )
+
+        );
+
+      }
+
+      if (validPhone) {
+
+        fragment.appendChild(
+
+          createContactItem(
+            "Phone",
+            phone,
+            `tel:${cleanPhone}`
+          )
+
+        );
+
+      }
+
+      if (text(data.locationMeta)) {
+
+        const location = create(
+          "div",
+          "contact-item"
+        );
+
+        location.appendChild(
+
+          create(
+            "span",
+            "contact-label",
+            "Location"
+          )
+
+        );
+
+        location.appendChild(
+
+          create(
+            "span",
+            "contact-value",
+            data.locationMeta
+          )
+
+        );
+
+        fragment.appendChild(location);
+
+      }
+
+      replaceContent(
+        details,
+        fragment
+      );
+
+    }
+
+    renderSocialLinks(contact);
+
+    const emailCTA = $("emailCTA");
+
+    if (emailCTA) {
+
+      if (validEmail) {
+
+        emailCTA.href =
+          `mailto:${email}`;
+
+        setVisible(
+          emailCTA,
+          true
+        );
+
+      } else {
+
+        emailCTA.removeAttribute(
+          "href"
+        );
+
+        setVisible(
+          emailCTA,
+          false
+        );
+
+      }
+
+    }
+
+  }
+
+
+  /* ==================================================
+     18. SOCIAL LINKS
+  ================================================== */
+
+  function renderSocialLinks(contact) {
+
+    const container =
+      $("socialLinks");
+
+    if (!container) return;
+
+    const platforms = [
+
+      ["linkedin", "LinkedIn"],
+
+      ["website", "Website"],
+
+      ["github", "GitHub"],
+
+      ["behance", "Behance"],
+
+      ["facebook", "Facebook"],
+
+      ["instagram", "Instagram"],
+
+      ["tiktok", "TikTok"],
+
+      ["youtube", "YouTube"]
+
+    ];
+
+    const fragment =
+      document.createDocumentFragment();
+
+    let count = 0;
+
+    platforms.forEach(
+      ([key, label]) => {
+
+        const link = createExternalLink(
+          label,
+          contact[key],
+          "social-link"
+        );
+
+        if (!link) return;
+
+        link.appendChild(
+          createArrow()
+        );
+
+        fragment.appendChild(link);
+
+        count += 1;
+
+      }
+    );
+
+    replaceContent(
+      container,
+      fragment
+    );
+
+    setVisible(
+      container,
+      count > 0
+    );
+
+  }
+
+
+  /* ==================================================
+     19. CV DOWNLOAD
+  ================================================== */
+
+  function renderCV(data) {
+
+    const available = validPDF(
+      data.cvUrl
+    );
+
+    const links = $$(
+      "[data-cv-download]"
+    );
+
+    links.forEach(link => {
+
+      if (available) {
+
+        link.href = data.cvUrl;
+
+        link.setAttribute(
+          "download",
+          "Le-Ngoc-Thien-Bao-CV.pdf"
+        );
+
+        setVisible(link, true);
+
+      } else {
+
+        link.removeAttribute("href");
+
+        link.removeAttribute(
+          "download"
+        );
+
+        setVisible(link, false);
+
+      }
+
+    });
+
+    setVisible(
+      "cvBanner",
+      available
+    );
+
+  }
+
+
+  /* ==================================================
+     20. MOBILE NAVIGATION
+  ================================================== */
+
+  function initMobileMenu() {
+
+    const toggle = $("menuToggle");
+
+    const menu = $("mobileMenu");
+
+    if (!toggle || !menu) return;
+
+    let isOpen = false;
+
+    function setMenu(
+      open,
+      restoreFocus = false
+    ) {
+
+      isOpen = open;
+
+      menu.classList.toggle(
+        "open",
+        open
+      );
+
+      document.body.classList.toggle(
+        "menu-open",
+        open
+      );
+
+      toggle.setAttribute(
+        "aria-expanded",
+        String(open)
+      );
+
+      menu.setAttribute(
+        "aria-hidden",
+        String(!open)
+      );
+
+      menu.inert = !open;
+
+      if (open) {
+
+        const firstLink =
+          menu.querySelector(
+            'a:not([hidden])'
+          );
+
+        firstLink?.focus();
+
+      } else if (restoreFocus) {
+
+        toggle.focus();
+
+      }
+
+    }
+
+    setMenu(false);
+
+    toggle.addEventListener(
+      "click",
+      () => setMenu(
+        !isOpen,
+        isOpen
+      )
+    );
+
+    $$("a", menu).forEach(link => {
+
+      link.addEventListener(
+        "click",
+        () => {
+
+          setMenu(false);
+
+          const href =
+            link.getAttribute("href");
+
+          if (
+            href &&
+            href.startsWith("#")
+          ) {
+
+            const target = $(
+              href.slice(1)
+            );
+
+            if (target) {
+
+              target.setAttribute(
+                "tabindex",
+                "-1"
+              );
+
+              target.focus({
+                preventScroll: true
+              });
+
+            }
+
+          }
+
+        }
+      );
+
+    });
+
+    document.addEventListener(
+      "keydown",
+      event => {
+
+        if (
+          event.key === "Escape" &&
+          isOpen
+        ) {
+
+          setMenu(false, true);
+
+        }
+
+      }
+    );
+
+    window.addEventListener(
+      "resize",
+      () => {
+
+        if (
+          window.innerWidth >
+            CONFIG.mobileBreakpoint &&
+          isOpen
+        ) {
+
+          setMenu(false);
+
+        }
+
+      }
+    );
+
+  }
+
+
+  /* ==================================================
+     21. NAVIGATION VISIBILITY
+  ================================================== */
+
+  function updateNavigation() {
+
+    $$("[data-nav-section]")
+      .forEach(link => {
+
+        const id =
+          link.dataset.navSection;
+
+        const section = $(id);
+
+        if (!section) return;
+
+        const visible =
+          !section.hidden &&
+          !section.classList.contains(
+            "hidden"
+          );
+
+        setVisible(
+          link,
+          visible
+        );
+
+      });
+
+  }
+
+
+  /* ==================================================
+     22. SCROLL PROGRESS
+  ================================================== */
+
+  function initScrollProgress() {
+
+    const progress =
+      $("scrollProgress");
+
+    if (!progress) return;
+
+    let ticking = false;
+
+    function update() {
+
+      const root =
+        document.documentElement;
+
+      const scrollable =
+        root.scrollHeight -
+        window.innerHeight;
+
+      const percent =
+        scrollable > 0
+          ? (
+              window.scrollY /
+              scrollable
+            ) * 100
+          : 0;
+
+      progress.style.width =
+        `${Math.min(
+          100,
+          Math.max(0, percent)
+        )}%`;
+
+      ticking = false;
+
+    }
+
+    function requestUpdate() {
+
+      if (ticking) return;
+
+      ticking = true;
+
+      requestAnimationFrame(update);
+
+    }
+
+    window.addEventListener(
+      "scroll",
+      requestUpdate,
+      { passive: true }
+    );
+
+    window.addEventListener(
+      "resize",
+      requestUpdate
+    );
+
+    update();
+
+  }
+
+
+  /* ==================================================
+     23. ACTIVE NAVIGATION
+  ================================================== */
+
+  function initActiveNavigation() {
+
+    if (
+      !("IntersectionObserver" in window)
+    ) {
+      return;
+    }
+
+    if (navigationObserver) {
+
+      navigationObserver.disconnect();
+
+    }
+
+    const links = $$(
+      "[data-nav-section]"
+    );
+
+    const sectionIds = [
+      ...new Set(
+        links.map(
+          link =>
+            link.dataset.navSection
+        )
+      )
+    ];
+
+    const sections = sectionIds
+
+      .map(id => $(id))
+
+      .filter(section =>
+        section &&
+        !section.hidden
+      );
+
+    if (!sections.length) return;
+
+    navigationObserver =
+      new IntersectionObserver(
+
+        entries => {
+
+          const visible = entries
+
+            .filter(
+              entry =>
+                entry.isIntersecting
+            )
+
+            .sort(
+              (a, b) =>
+                b.intersectionRatio -
+                a.intersectionRatio
+            );
+
+          if (!visible.length) return;
+
+          const activeId =
+            visible[0].target.id;
+
+          links.forEach(link => {
+
+            const active =
+              link.dataset.navSection ===
+              activeId;
+
+            link.classList.toggle(
+              "active",
+              active
+            );
+
+            if (active) {
+
+              link.setAttribute(
+                "aria-current",
+                "location"
+              );
+
+            } else {
+
+              link.removeAttribute(
+                "aria-current"
+              );
+
+            }
+
+          });
+
+        },
+
+        {
+          rootMargin:
+            "-20% 0px -45% 0px",
+
+          threshold: 0
+        }
+
+      );
+
+    sections.forEach(section => {
+
+      navigationObserver.observe(
+        section
+      );
+
+    });
+
+  }
+
+
+  /* ==================================================
+     24. SCROLL REVEAL ANIMATION
+  ================================================== */
+
+  function initRevealAnimations() {
+
+    const elements = $$(
+
+      ".reveal, " +
+      ".reveal-left, " +
+      ".reveal-right, " +
+      ".mask-reveal"
+
+    );
+
+    if (revealObserver) {
+
+      revealObserver.disconnect();
+
+    }
+
+    /*
+       The old frontend has its own
+       animation logic.
+
+       Enable the new animation system
+       only after the new HTML is deployed.
+    */
+
+    if (
+      document.body.dataset.portfolioVersion
+        !== "2"
+    ) {
+
+      return;
+
+    }
+
+    function showAll() {
+
+      document.documentElement
+        .classList.remove(
+          "motion-ready"
+        );
+
+      elements.forEach(element => {
+
+        element.classList.add(
+          "is-visible"
+        );
+
+      });
+
+    }
+
+    if (
+      reducedMotion.matches ||
+      !("IntersectionObserver" in window)
+    ) {
+
+      showAll();
+
+      return;
+
+    }
+
+    try {
+
+      revealObserver =
+        new IntersectionObserver(
+
+          entries => {
+
+            entries.forEach(entry => {
+
+              if (
+                !entry.isIntersecting
+              ) {
+                return;
+              }
+
+              const element =
+                entry.target;
+
+              element.classList.add(
+                "is-visible"
+              );
+
+              revealObserver.unobserve(
+                element
+              );
+
+            });
+
+          },
+
+          {
+            threshold:
+              CONFIG.animationThreshold,
+
+            rootMargin:
+              "0px 0px -4% 0px"
+          }
+
+        );
+
+      elements.forEach(element => {
+
+        const bounds =
+          element.getBoundingClientRect();
+
+        /*
+           Avoid hiding content already
+           visible in the viewport.
+        */
+
+        if (
+          bounds.top <
+            window.innerHeight &&
+          bounds.bottom > 0
+        ) {
+
+          element.classList.add(
+            "is-visible"
+          );
+
+        } else {
+
+          revealObserver.observe(
+            element
+          );
+
+        }
+
+      });
+
+      document.documentElement
+        .classList.add(
+          "motion-ready"
+        );
+
+    } catch (error) {
+
+      console.warn(
+        "Animation initialization:",
+        error
+      );
+
+      showAll();
+
+    }
+
+  }
+
+
+  /* ==================================================
+     25. CONTENT STATUS
+  ================================================== */
+
+  function showContentStatus(
+    message,
+    error = false
+  ) {
+
+    const status = $("contentStatus");
+
+    if (!status) return;
+
+    status.textContent = message;
+
+    status.classList.toggle(
+      "error",
+      error
+    );
+
+    setVisible(
+      status,
+      Boolean(message)
+    );
+
+  }
+
+
+  /* ==================================================
+     26. RENDER COMPLETE PORTFOLIO
+  ================================================== */
+
+  function renderPortfolio(data) {
+
+    if (
+      !data ||
+      typeof data !== "object" ||
+      Array.isArray(data)
+    ) {
+
+      throw new Error(
+        "Invalid portfolio content."
+      );
+
+    }
+
+    renderPersonal(data);
+
+    renderHero(data);
+
+    renderAbout(data);
+
+    renderProjects(data);
+
+    renderExperience(data);
+
+    renderCompetencies(data);
+
+    renderTools(data);
+
+    renderCredentials(data);
+
+    renderContact(data);
+
+    renderCV(data);
+
+    updateNavigation();
+
+  }
+
+
+  /* ==================================================
+     27. FETCH CMS DATA
+  ================================================== */
+
+  async function loadPortfolio() {
+
+    try {
+
+      const response = await fetch(
+        CONFIG.api,
+        {
+          method: "GET",
+          cache: "no-store",
+          headers: {
+            Accept: "application/json"
+          }
+        }
+      );
+
+      if (!response.ok) {
+
+        throw new Error(
+          `CMS request failed: ${response.status}`
+        );
+
+      }
+
+      const data =
+        await response.json();
+
+      renderPortfolio(data);
+
+      showContentStatus("");
+
+    } catch (error) {
+
+      console.warn(
+        "Portfolio CMS:",
+        error
+      );
+
+      showContentStatus(
+        "Some portfolio content is temporarily unavailable. Please try again later.",
+        true
+      );
+
+    } finally {
+
+      initRevealAnimations();
+
+      initActiveNavigation();
+
+    }
+
+  }
+
+
+  /* ==================================================
+     28. APPLICATION INITIALIZATION
+  ================================================== */
+
+  function init() {
+
+    initMobileMenu();
+
+    initScrollProgress();
+
+    loadPortfolio();
+
+    if (
+      typeof reducedMotion
+        .addEventListener === "function"
+    ) {
+
+      reducedMotion.addEventListener(
+        "change",
+        initRevealAnimations
+      );
+
+    }
+
+  }
+
+
+  if (
+    document.readyState === "loading"
+  ) {
+
+    document.addEventListener(
+      "DOMContentLoaded",
+      init,
+      { once: true }
+    );
+
+  } else {
+
+    init();
+
+  }
+
 })();
+
+
+/* ==================================================
+   END OF PORTFOLIO V2 JAVASCRIPT
+================================================== */
