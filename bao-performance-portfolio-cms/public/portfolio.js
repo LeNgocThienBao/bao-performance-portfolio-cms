@@ -668,11 +668,11 @@
 
       image.decoding = "async";
 
-      image.hidden = true;
+      image.style.opacity = "0";
 
       function showImage() {
 
-        image.hidden = false;
+        image.style.opacity = "1";
 
         placeholder.hidden = true;
 
@@ -987,7 +987,7 @@
 
       image.decoding = "async";
 
-      image.style.display = "none";
+      image.style.opacity = "0";
 
       image.onload = () => {
 
@@ -1004,7 +1004,7 @@
 
         });
 
-        image.style.display = "block";
+        image.style.opacity = "1";
 
         image.style.zIndex = "2";
 
