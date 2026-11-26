@@ -2440,6 +2440,723 @@
      27. FETCH CMS DATA
   ================================================== */
 
+// ==================================================
+// PORTFOLIO V2.1 - MULTILINGUAL ENGINE
+// ==================================================
+
+const LANGUAGE_KEY = "bao-portfolio-language";
+
+let currentLanguage = "en";
+let originalContent = null;
+
+const staticTranslations = [
+
+  // Navigation
+  [".skip-link",
+    "Skip to content",
+    "Chuyển đến nội dung"],
+
+  ['nav a[data-nav-section="about"]',
+    "About", "Giới thiệu"],
+
+  ['nav a[data-nav-section="work"]',
+    "Selected work", "Dự án"],
+
+  ['nav a[data-nav-section="experience"]',
+    "Experience", "Kinh nghiệm"],
+
+  ['nav a[data-nav-section="competencies"]',
+    "Skills", "Kỹ năng"],
+
+  ['nav a[data-nav-section="tools"]',
+    "Tools", "Công cụ"],
+
+  ['nav a[data-nav-section="credentials"]',
+    "Education", "Học vấn"],
+
+  ['nav a[data-nav-section="contact"]',
+    "Contact", "Liên hệ"],
+
+  [".nav-contact",
+    "Let's connect", "Liên hệ"],
+
+  // Hero
+  [".hero-index",
+    "Independent professional portfolio",
+    "Hồ sơ năng lực cá nhân"],
+
+  [".scroll-label",
+    "Scroll to explore",
+    "Cuộn để khám phá"],
+
+  ["#heroPhotoLabel span:first-child",
+    "Personal portfolio",
+    "Portfolio cá nhân"],
+
+  ["#heroPhotoLabel span:last-child",
+    "Profile / 01",
+    "Hồ sơ / 01"],
+
+  // About
+  ["#about .section-kicker",
+    "01 / About me",
+    "01 / Giới thiệu"],
+
+  ["#aboutTitle",
+    "Where marketing meets",
+    "Nơi marketing kết hợp cùng"],
+
+  ["#aboutTitle .accent",
+    "technology.",
+    "công nghệ."],
+
+  ["#about .section-description",
+    "A multidisciplinary approach to digital marketing, combining analytical thinking, creative execution and technical capabilities.",
+    "Kết hợp tư duy phân tích, năng lực sáng tạo và nền tảng công nghệ trong triển khai digital marketing."],
+
+  ["#about .about-card .eyebrow",
+    "My approach",
+    "Phương pháp làm việc"],
+
+  ["#about .about-card h3",
+    "Understand the goal. Read the signal. Make the next move.",
+    "Hiểu mục tiêu. Phân tích dữ liệu. Đưa ra quyết định."],
+
+  ["#about .about-card p",
+    "Strategy, execution, measurement and continuous improvement.",
+    "Chiến lược, thực thi, đo lường và liên tục tối ưu."],
+
+  ["#about .work-role:nth-of-type(1) .work-role-label",
+    "Professional experience",
+    "Kinh nghiệm làm việc"],
+
+  ["#about .work-role:nth-of-type(2) .work-role-label",
+    "Based in",
+    "Địa điểm"],
+
+  // Selected work
+  ["#work .section-kicker",
+    "02 / Selected work",
+    "02 / Dự án tiêu biểu"],
+
+  ["#workTitle",
+    "Campaign thinking,",
+    "Từ chiến lược"],
+
+  ["#workTitle .accent",
+    "made visible.",
+    "đến thực thi."],
+
+  ["#work .section-description",
+    "Selected projects across performance marketing, campaign optimization, creative production and digital experiences.",
+    "Các dự án tiêu biểu về performance marketing, tối ưu chiến dịch, sản xuất nội dung và phát triển trải nghiệm số."],
+
+  ["#work .section-number",
+    "/ Selected projects",
+    "/ Dự án tiêu biểu"],
+
+  // Career journey
+  ["#experience .section-kicker",
+    "03 / Career journey",
+    "03 / Hành trình nghề nghiệp"],
+
+  ["#experienceTitle",
+    "Experience that",
+    "Kinh nghiệm"],
+
+  ["#experienceTitle .accent",
+    "connects.",
+    "và phát triển."],
+
+  ["#experience .section-description",
+    "A professional journey across digital marketing, web development and creative execution.",
+    "Hành trình phát triển chuyên môn trong digital marketing, phát triển website và sản xuất nội dung sáng tạo."],
+
+  // Competencies
+  ["#competencies .section-kicker",
+    "04 / Core competencies",
+    "04 / Năng lực chuyên môn"],
+
+  ["#competenciesTitle",
+    "What I bring",
+    "Những giá trị"],
+
+  ["#competenciesTitle .accent",
+    "to the table.",
+    "tôi mang lại."],
+
+  ["#competencies .section-description",
+    "A combination of marketing expertise, analytical capabilities, creative production and technical skills.",
+    "Kết hợp chuyên môn marketing, năng lực phân tích, sản xuất nội dung và kỹ năng công nghệ."],
+
+  // Tools
+  ["#tools .section-kicker",
+    "05 / Tools & platforms",
+    "05 / Công cụ & nền tảng"],
+
+  ["#toolsTitle",
+    "The tools behind",
+    "Công nghệ hỗ trợ"],
+
+  ["#toolsTitle .accent",
+    "the work.",
+    "công việc."],
+
+  ["#tools .section-description",
+    "Advertising platforms, analytics, creative software and development technologies used across my work.",
+    "Các nền tảng quảng cáo, công cụ phân tích, phần mềm sáng tạo và công nghệ phát triển website."],
+
+  // Education
+  ["#credentials .section-kicker",
+    "06 / Education & credentials",
+    "06 / Học vấn & chứng chỉ"],
+
+  ["#credentialsTitle",
+    "Built on",
+    "Không ngừng"],
+
+  ["#credentialsTitle .accent",
+    "continuous learning.",
+    "học hỏi."],
+
+  ["#credentials .section-description",
+    "Academic background and professional training supporting my marketing and technical capabilities.",
+    "Nền tảng học vấn và đào tạo chuyên môn hỗ trợ năng lực marketing và công nghệ."],
+
+  ["#educationPanel .credential-panel-title",
+    "Education",
+    "Học vấn"],
+
+  ["#certificationsPanel .credential-panel-title",
+    "Certifications & Training",
+    "Chứng chỉ & đào tạo"],
+
+  // CV
+  ["#cvBanner .eyebrow",
+    "Curriculum vitae",
+    "Hồ sơ nghề nghiệp"],
+
+  ["#cvTitle",
+    "Beyond the portfolio.",
+    "Tìm hiểu thêm về tôi."],
+
+  ["#cvBanner .cv-banner-content p",
+    "Download my CV for a complete overview of my professional experience, education and technical capabilities.",
+    "Tải CV để xem đầy đủ kinh nghiệm làm việc, học vấn và năng lực chuyên môn của tôi."],
+
+  ["[data-cv-download]",
+    "Download CV",
+    "Tải CV"],
+
+  ["#experience [data-cv-download]",
+    "Download full CV",
+    "Tải CV đầy đủ"],
+
+  // Contact
+  ["#contact .section-kicker",
+    "07 / Get in touch",
+    "07 / Liên hệ"],
+
+  ["#emailCTA",
+    "Send me an email",
+    "Gửi email cho tôi"],
+
+  // Footer
+  [".footer-copy",
+    "· Personal portfolio",
+    "· Portfolio cá nhân"],
+
+  [".back-to-top",
+    "Back to top",
+    "Về đầu trang"]
+
+];
+
+
+// Preserve icons, accent spans and other HTML elements
+
+function replaceDirectText(element, value) {
+
+  const nodes = Array.from(element.childNodes)
+    .filter(node =>
+      node.nodeType === Node.TEXT_NODE &&
+      node.textContent.trim()
+    );
+
+  if (!nodes.length) {
+
+    element.prepend(
+      document.createTextNode(value + " ")
+    );
+
+    return;
+
+  }
+
+  nodes[0].textContent = " " + value + " ";
+
+  nodes.slice(1).forEach(node => {
+    node.textContent = "";
+  });
+
+}
+
+
+// Apply static interface translations
+
+function applyStaticTranslations() {
+
+  const isVI = currentLanguage === "vi";
+
+  staticTranslations.forEach(
+    ([selector, en, vi]) => {
+
+      $$(selector).forEach(element => {
+
+        replaceDirectText(
+          element,
+          isVI ? vi : en
+        );
+
+      });
+
+    }
+  );
+
+  // Preserve copyright symbol and year
+
+  const footer = document.querySelector(".footer-copy");
+
+  if (footer && $("footerYear")) {
+
+    const year = $("footerYear");
+
+    footer.replaceChildren(
+      document.createTextNode("© "),
+      year,
+      document.createTextNode(
+        isVI
+          ? " · Portfolio cá nhân"
+          : " · Personal portfolio"
+      )
+    );
+
+  }
+
+  document.documentElement.lang =
+    currentLanguage;
+
+  const attributes = [
+
+    [".brand", "aria-label",
+      "Portfolio home",
+      "Trang chủ Portfolio"],
+
+    [".nav-links", "aria-label",
+      "Main navigation",
+      "Điều hướng chính"],
+
+    ["#mobileMenu", "aria-label",
+      "Mobile navigation",
+      "Điều hướng di động"],
+
+    ["#menuToggle", "aria-label",
+      "Toggle navigation menu",
+      "Mở hoặc đóng menu"],
+
+    [".language-switcher", "aria-label",
+      "Language selection",
+      "Chọn ngôn ngữ"]
+
+  ];
+
+  attributes.forEach(
+    ([selector, attribute, en, vi]) => {
+
+      $$(selector).forEach(element => {
+
+        element.setAttribute(
+          attribute,
+          isVI ? vi : en
+        );
+
+      });
+
+    }
+  );
+
+}
+
+
+// Merge translated fields with original content
+
+function mergeTranslatedFields(base, translated, fields) {
+
+  const result = { ...base };
+
+  fields.forEach(key => {
+
+    const value = translated?.[key];
+
+    if (
+      typeof value === "string" &&
+      value.trim()
+    ) {
+
+      result[key] = value;
+
+    }
+
+  });
+
+  return result;
+
+}
+
+
+// Match translated records by their original IDs
+
+function mergeTranslatedRecords(
+  originals,
+  translations,
+  fields,
+  translateItems = false
+) {
+
+  const translatedMap = new Map(
+    array(translations).map(item => [
+      item.id,
+      item
+    ])
+  );
+
+  return array(originals).map(item => {
+
+    const translated = translatedMap.get(item.id);
+
+    if (!translated) return { ...item };
+
+    const result = mergeTranslatedFields(
+      item,
+      translated,
+      fields
+    );
+
+    if (
+      translateItems &&
+      Array.isArray(translated.items) &&
+      translated.items.length
+    ) {
+
+      result.items = translated.items;
+
+    }
+
+    return result;
+
+  });
+
+}
+
+
+// Build localized CMS content
+
+function getLocalizedContent(data) {
+
+  if (currentLanguage !== "vi") {
+
+    return data;
+
+  }
+
+  const vi = data.translations?.vi || {};
+
+  const localized = mergeTranslatedFields(
+    data,
+    vi,
+    [
+      "heroKicker",
+      "heroHeadline",
+      "heroLead",
+      "heroPrimaryCTA",
+      "heroSecondaryCTA",
+      "jobTitle",
+      "experienceMeta",
+      "locationMeta"
+    ]
+  );
+
+  const dictionary =
+    window.PORTFOLIO_TRANSLATIONS?.vi;
+
+  localized.heroPrimaryCTA = text(
+    vi.heroPrimaryCTA,
+    dictionary?.hero?.primaryCTA ||
+      "Khám phá dự án"
+  );
+
+  localized.heroSecondaryCTA = text(
+    vi.heroSecondaryCTA,
+    dictionary?.hero?.secondaryCTA ||
+      "Tìm hiểu về tôi"
+  );
+
+  localized.projects = mergeTranslatedRecords(
+    data.projects,
+    vi.projects,
+    [
+      "title",
+      "description",
+      "meta",
+      "category",
+      "role",
+      "results"
+    ]
+  );
+
+  localized.workExperience = mergeTranslatedRecords(
+    data.workExperience,
+    vi.workExperience,
+    [
+      "position",
+      "period",
+      "location",
+      "description"
+    ]
+  );
+
+  localized.competencies = mergeTranslatedRecords(
+    data.competencies,
+    vi.competencies,
+    ["title"],
+    true
+  );
+
+  localized.tools = mergeTranslatedRecords(
+    data.tools,
+    vi.tools,
+    ["title"]
+  );
+
+  localized.education = mergeTranslatedRecords(
+    data.education,
+    vi.education,
+    [
+      "school",
+      "degree",
+      "major",
+      "period",
+      "description"
+    ]
+  );
+
+  localized.certifications = mergeTranslatedRecords(
+    data.certifications,
+    vi.certifications,
+    [
+      "title",
+      "date",
+      "description"
+    ]
+  );
+
+  localized.contact = mergeTranslatedFields(
+    data.contact || {},
+    vi.contact,
+    ["headline", "description"]
+  );
+
+  return localized;
+
+}
+
+
+// Translate dynamically generated interface labels
+
+function translateDynamicLabels() {
+
+  const dictionary =
+    window.PORTFOLIO_TRANSLATIONS?.[currentLanguage];
+
+  if (!dictionary) return;
+
+  const labels = [
+
+    ["#work .work-role-label",
+      dictionary.work.role],
+
+    ["#work .work-results-label",
+      dictionary.work.results],
+
+    ["#work .work-link",
+      dictionary.work.viewProject]
+
+  ];
+
+  labels.forEach(([selector, value]) => {
+
+    if (!value) return;
+
+    $$(selector).forEach(element => {
+
+      replaceDirectText(element, value);
+
+    });
+
+  });
+
+  const contactLabels = {
+    Email: dictionary.contact.email,
+    Phone: dictionary.contact.phone,
+    Location: dictionary.contact.location
+  };
+
+  $$("#contactDetails .contact-label")
+    .forEach(element => {
+
+      const label = element.textContent.trim();
+
+      if (contactLabels[label]) {
+
+        element.textContent = contactLabels[label];
+
+      }
+
+    });
+
+  const avatar = $("heroAvatar");
+
+  if (avatar && originalContent) {
+
+    avatar.alt =
+      originalContent.name +
+      (currentLanguage === "vi"
+        ? " — Ảnh chân dung"
+        : " — Profile portrait");
+
+  }
+
+}
+
+
+// Synchronize desktop and mobile buttons
+
+function updateLanguageButtons() {
+
+  $$("[data-language]").forEach(button => {
+
+    const active =
+      button.dataset.language === currentLanguage;
+
+    button.classList.toggle(
+      "is-active",
+      active
+    );
+
+    button.setAttribute(
+      "aria-pressed",
+      String(active)
+    );
+
+  });
+
+}
+
+
+// Render portfolio in the selected language
+
+function renderLocalizedPortfolio() {
+
+  if (originalContent) {
+
+    const localized =
+      getLocalizedContent(originalContent);
+
+    renderPortfolio(localized);
+
+    translateDynamicLabels();
+
+  }
+
+  applyStaticTranslations();
+
+  updateLanguageButtons();
+
+}
+
+
+// Change language without reloading the page
+
+function setLanguage(language) {
+
+  if (!["en", "vi"].includes(language)) return;
+
+  if (language === currentLanguage) return;
+
+  currentLanguage = language;
+
+  try {
+
+    localStorage.setItem(
+      LANGUAGE_KEY,
+      language
+    );
+
+  } catch (error) {
+
+    console.warn("Language preference:", error);
+
+  }
+
+  renderLocalizedPortfolio();
+
+  initRevealAnimations();
+
+  initActiveNavigation();
+
+}
+
+
+// Initialize language controls
+
+function initLanguageSwitcher() {
+
+  try {
+
+    const saved = localStorage.getItem(
+      LANGUAGE_KEY
+    );
+
+    currentLanguage =
+      saved === "vi" ? "vi" : "en";
+
+  } catch {
+
+    currentLanguage = "en";
+
+  }
+
+  $$("[data-language]").forEach(button => {
+
+    button.addEventListener("click", () => {
+
+      setLanguage(button.dataset.language);
+
+    });
+
+  });
+
+  updateLanguageButtons();
+
+  applyStaticTranslations();
+
+}
+
+// ==================================================
+// END MULTILINGUAL ENGINE
+// ==================================================
+
+
   async function loadPortfolio() {
 
     try {
@@ -2464,11 +3181,13 @@
       }
 
       const data =
-        await response.json();
+  await response.json();
 
-      renderPortfolio(data);
+originalContent = data;
 
-      showContentStatus("");
+renderLocalizedPortfolio();
+
+showContentStatus("");
 
     } catch (error) {
 
@@ -2499,11 +3218,13 @@
 
   function init() {
 
-    initMobileMenu();
+  initMobileMenu();
 
-    initScrollProgress();
+  initScrollProgress();
 
-    loadPortfolio();
+  initLanguageSwitcher();
+
+  loadPortfolio();
 
     if (
       typeof reducedMotion
