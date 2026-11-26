@@ -190,6 +190,82 @@ function mediaKey(path) {
   return match ? match[1] : null;
 }
 
+
+function cleanText(value, max = 1000) {
+  return typeof value === "string"
+    ? value.trim().slice(0, max)
+    : "";
+}
+
+function cleanLink(value) {
+  const link = cleanText(value, 2000);
+
+  if (!link) return "";
+
+  try {
+    const url = new URL(link);
+
+    return ["https:", "http:"].includes(url.protocol)
+      ? url.href
+      : "";
+  } catch {
+    return "";
+  }
+}
+
+function cleanList(value, max = 50) {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .slice(0, max)
+    .map(item => cleanText(item, 500))
+    .filter(Boolean);
+}
+
+function cleanRecords(value, fields, max = 50) {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .slice(0, max)
+    .filter(item =>
+      item &&
+      typeof item === "object" &&
+      !Array.isArray(item)
+    )
+    .map(item => {
+      const record = {
+        id: cleanText(item.id, 100) || crypto.randomUUID()
+      };
+
+      for (const [key, limit] of Object.entries(fields)) {
+        record[key] = cleanText(item[key], limit);
+      }
+
+      return record;
+    });
+}
+
+async function validateMedia(value, env) {
+  if (value === "") return "";
+
+  const key = mediaKey(value);
+
+  if (!key) {
+    throw new Error("Đường dẫn hình ảnh không hợp lệ.");
+  }
+
+  if (!env.MEDIA) {
+    throw new Error("R2 chưa được cấu hình.");
+  }
+
+  if (!(await env.MEDIA.head(key))) {
+    throw new Error("Hình ảnh không tồn tại trong R2.");
+  }
+
+  return value;
+}
+
+
 async function api(req, env, url) {
 
   // GET PORTFOLIO CONTENT
@@ -428,14 +504,19 @@ try {
     });
   }
 
-  // SAVE CONTENT TO D1
+
+  // SAVE CONTENT TO D1 - CMS V2
+
   if (
     url.pathname === "/api/content" &&
     req.method === "PUT"
   ) {
+
+    // Authentication
+
     if (!(await validSession(req, env))) {
       return json({
-        error: "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại."
+        error: "Phiên đăng nhập đã hết hạn."
       }, 401);
     }
 
@@ -447,11 +528,22 @@ try {
       }, 403);
     }
 
+    // Read request data
+
     let data;
 
     try {
-      data = await req.json();
-    } catch (e) {
+      const raw = await req.text();
+
+      if (raw.length > 500000) {
+        return json({
+          error: "Dữ liệu vượt quá giới hạn."
+        }, 413);
+      }
+
+      data = JSON.parse(raw);
+
+    } catch {
       return json({
         error: "Dữ liệu JSON không hợp lệ."
       }, 400);
@@ -460,24 +552,55 @@ try {
     if (
       !data ||
       typeof data !== "object" ||
-      typeof data.name !== "string" ||
-      !Array.isArray(data.projects) ||
-      data.projects.length !== 4
+      Array.isArray(data)
     ) {
       return json({
-        error: "Cần có tên hiển thị và đúng 4 mục công việc."
+        error: "Dữ liệu không hợp lệ."
       }, 400);
     }
 
+    // Preserve existing content
+
+    let existing;
+
+    try {
+      existing = await getContent(env);
+
+    } catch (error) {
+      console.error("CMS read:", error.message);
+
+      return json({
+        error: "Không thể đọc dữ liệu hiện tại."
+      }, 503);
+    }
+
+    const has = key =>
+      Object.prototype.hasOwnProperty.call(data, key);
+
     const clean = {
-      name: data.name.trim().slice(0, 100),
-      heroKicker: String(data.heroKicker || "").slice(0, 180),
-      heroLead: String(data.heroLead || "").slice(0, 1000),
-      jobTitle: String(data.jobTitle || "").slice(0, 120),
-      experienceMeta: String(data.experienceMeta || "").slice(0, 180),
-      locationMeta: String(data.locationMeta || "").slice(0, 180),
-      projects: []
+      ...existing,
+      schemaVersion: 2
     };
+
+    // Personal information and hero
+
+    const textFields = {
+      name: 100,
+      heroKicker: 180,
+      heroHeadline: 300,
+      heroLead: 2000,
+      heroPrimaryCTA: 100,
+      heroSecondaryCTA: 100,
+      jobTitle: 120,
+      experienceMeta: 180,
+      locationMeta: 180
+    };
+
+    for (const [key, limit] of Object.entries(textFields)) {
+      if (has(key)) {
+        clean[key] = cleanText(data[key], limit);
+      }
+    }
 
     if (!clean.name) {
       return json({
@@ -485,45 +608,287 @@ try {
       }, 400);
     }
 
-    for (const p of data.projects) {
-      const image =
-        typeof p.image === "string" ? p.image : "";
+    // Profile image
 
-      if (image && !mediaKey(image)) {
-        return json({
-          error: "Đường dẫn ảnh không hợp lệ."
-        }, 400);
+    try {
+      if (has("avatar")) {
+        clean.avatar = await validateMedia(
+          cleanText(data.avatar, 500),
+          env
+        );
       }
-
-      if (
-        image &&
-        env.MEDIA &&
-        !(await env.MEDIA.head(mediaKey(image)))
-      ) {
-        return json({
-          error: "Ảnh không tồn tại trong R2."
-        }, 400);
-      }
-
-      clean.projects.push({
-        title: String(p.title || "").slice(0, 180),
-        description: String(p.description || "").slice(0, 1000),
-        image
-      });
+    } catch (error) {
+      return json({
+        error: error.message
+      }, 400);
     }
 
-    await env.DB.prepare(
-      "INSERT INTO bao_portfolio_content_v2 " +
-      "(id,content,updated_at) " +
-      "VALUES (1,?,CURRENT_TIMESTAMP) " +
-      "ON CONFLICT(id) DO UPDATE SET " +
-      "content=excluded.content,updated_at=CURRENT_TIMESTAMP"
-    )
-      .bind(JSON.stringify(clean))
-      .run();
+    // Contact information
 
-    return json({ ok: true });
+    if (
+      has("contact") &&
+      data.contact &&
+      typeof data.contact === "object" &&
+      !Array.isArray(data.contact)
+    ) {
+      const contact = {
+        ...existing.contact
+      };
+
+      const fields = {
+        email: 200,
+        phone: 50,
+        headline: 300,
+        description: 2000
+      };
+
+      for (const [key, limit] of Object.entries(fields)) {
+        if (Object.hasOwn(data.contact, key)) {
+          contact[key] = cleanText(
+            data.contact[key],
+            limit
+          );
+        }
+      }
+
+      for (const key of [
+        "linkedin",
+        "website",
+        "facebook",
+        "instagram",
+        "github",
+        "behance",
+        "tiktok",
+        "youtube"
+      ]) {
+        if (Object.hasOwn(data.contact, key)) {
+          contact[key] = cleanLink(
+            data.contact[key]
+          );
+        }
+      }
+
+      clean.contact = contact;
+    }
+
+    // Selected work
+
+    if (has("projects")) {
+
+      if (
+        !Array.isArray(data.projects) ||
+        data.projects.length > 30
+      ) {
+        return json({
+          error: "Chỉ hỗ trợ tối đa 30 dự án."
+        }, 400);
+      }
+
+      const projects = [];
+      const ids = new Set();
+
+      try {
+
+        for (
+          let index = 0;
+          index < data.projects.length;
+          index++
+        ) {
+
+          const p = data.projects[index];
+
+          if (
+            !p ||
+            typeof p !== "object" ||
+            Array.isArray(p)
+          ) {
+            throw new Error("Dữ liệu dự án không hợp lệ.");
+          }
+
+          const previous = p.id
+            ? existing.projects.find(
+                item => item.id === p.id
+              )
+            : existing.projects[index];
+
+          let id =
+            cleanText(p.id, 100) ||
+            previous?.id ||
+            crypto.randomUUID();
+
+          if (ids.has(id)) {
+            id = crypto.randomUUID();
+          }
+
+          ids.add(id);
+
+          const project = {
+            id,
+            title: "",
+            description: "",
+            image: "",
+            meta: "",
+            category: "",
+            role: "",
+            results: "",
+            link: "",
+            ...previous,
+            id
+          };
+
+          const fields = {
+            title: 180,
+            description: 5000,
+            meta: 200,
+            category: 150,
+            role: 300,
+            results: 3000
+          };
+
+          for (const [key, limit] of Object.entries(fields)) {
+            if (Object.hasOwn(p, key)) {
+              project[key] = cleanText(
+                p[key],
+                limit
+              );
+            }
+          }
+
+          if (Object.hasOwn(p, "link")) {
+            project.link = cleanLink(p.link);
+          }
+
+          if (Object.hasOwn(p, "image")) {
+            project.image = await validateMedia(
+              cleanText(p.image, 500),
+              env
+            );
+          }
+
+          projects.push(project);
+        }
+
+      } catch (error) {
+        return json({
+          error: error.message
+        }, 400);
+      }
+
+      clean.projects = projects;
+    }
+
+    // Work experience
+
+    if (has("workExperience")) {
+      clean.workExperience = cleanRecords(
+        data.workExperience,
+        {
+          company: 200,
+          position: 200,
+          period: 150,
+          location: 150,
+          description: 5000
+        },
+        30
+      );
+    }
+
+    // Core competencies
+
+    if (has("competencies")) {
+      clean.competencies = Array.isArray(data.competencies)
+        ? data.competencies
+            .slice(0, 20)
+            .filter(group =>
+              group && typeof group === "object"
+            )
+            .map(group => ({
+              id: cleanText(group.id, 100)
+                || crypto.randomUUID(),
+              title: cleanText(group.title, 200),
+              items: cleanList(group.items)
+            }))
+        : [];
+    }
+
+    // Tools and platforms
+
+    if (has("tools")) {
+      clean.tools = Array.isArray(data.tools)
+        ? data.tools
+            .slice(0, 20)
+            .filter(group =>
+              group && typeof group === "object"
+            )
+            .map(group => ({
+              id: cleanText(group.id, 100)
+                || crypto.randomUUID(),
+              title: cleanText(group.title, 200),
+              items: cleanList(group.items)
+            }))
+        : [];
+    }
+
+    // Education
+
+    if (has("education")) {
+      clean.education = cleanRecords(
+        data.education,
+        {
+          school: 200,
+          degree: 200,
+          major: 200,
+          period: 150,
+          description: 2000
+        },
+        20
+      );
+    }
+
+    // Certifications
+
+    if (has("certifications")) {
+      clean.certifications = cleanRecords(
+        data.certifications,
+        {
+          title: 250,
+          issuer: 200,
+          date: 100,
+          description: 2000
+        },
+        50
+      );
+    }
+
+    // Save content to D1
+
+    try {
+
+      await env.DB.prepare(
+        "INSERT INTO bao_portfolio_content_v2 " +
+        "(id,content,updated_at) " +
+        "VALUES (1,?,CURRENT_TIMESTAMP) " +
+        "ON CONFLICT(id) DO UPDATE SET " +
+        "content=excluded.content," +
+        "updated_at=CURRENT_TIMESTAMP"
+      )
+        .bind(JSON.stringify(clean))
+        .run();
+
+      return json({
+        ok: true
+      });
+
+    } catch (error) {
+
+      console.error("CMS save:", error.message);
+
+      return json({
+        error: "Không thể lưu dữ liệu vào D1."
+      }, 503);
+    }
   }
+
 
   return json({
     error: "Not found"
