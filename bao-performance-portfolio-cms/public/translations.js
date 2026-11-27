@@ -38,18 +38,23 @@
         projects: "Projects"
       },
 
-      gallery: {
-  viewGallery: "View gallery",
-  close: "Close gallery",
-  previous: "Previous image",
-  next: "Next image",
-  image: "Image",
-  images: "images",
-  thumbnails: "Gallery thumbnails",
-  loading: "Loading image...",
-  error: "Unable to load image.",
-  gallery: "Project gallery"
-},
+            gallery: {
+        viewGallery: "View gallery",
+        close: "Close gallery",
+        previous: "Previous media",
+        next: "Next media",
+        image: "Image",
+        images: "images",
+        media: "media items",
+        video: "Video",
+        thumbnails: "Gallery thumbnails",
+        loading: "Loading image...",
+        error: "Unable to load image.",
+        gallery: "Project gallery",
+        play: "Play video",
+        openOriginal: "Watch original video",
+        videoError: "Unable to play video. Please open the original."
+      },
 
       experience: {
         label: "Career journey",
@@ -127,18 +132,23 @@
         projects: "Dự án"
       },
 
-      gallery: {
-  viewGallery: "Xem bộ ảnh",
-  close: "Đóng bộ ảnh",
-  previous: "Ảnh trước",
-  next: "Ảnh tiếp theo",
-  image: "Ảnh",
-  images: "ảnh",
-  thumbnails: "Danh sách ảnh",
-  loading: "Đang tải ảnh...",
-  error: "Không thể tải ảnh.",
-  gallery: "Hình ảnh dự án"
-},
+            gallery: {
+        viewGallery: "Xem bộ sưu tập",
+        close: "Đóng bộ sưu tập",
+        previous: "Nội dung trước",
+        next: "Nội dung tiếp theo",
+        image: "Ảnh",
+        images: "ảnh",
+        media: "nội dung",
+        video: "Video",
+        thumbnails: "Danh sách nội dung",
+        loading: "Đang tải ảnh...",
+        error: "Không thể tải ảnh.",
+        gallery: "Bộ sưu tập dự án",
+        play: "Phát video",
+        openOriginal: "Xem video gốc",
+        videoError: "Không thể phát video. Vui lòng mở video gốc."
+      },
 
       experience: {
         label: "Hành trình nghề nghiệp",
