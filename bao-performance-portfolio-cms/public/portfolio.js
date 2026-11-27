@@ -602,7 +602,7 @@
 
   }
 // ==================================================
-// PORTFOLIO V2.2 - PROJECT GALLERY ENGINE
+// PORTFOLIO V2.3 - MULTIMEDIA GALLERY ENGINE
 // ==================================================
 
 let activeGallery = null;
@@ -629,13 +629,380 @@ function galleryLabel(key) {
 
 }
 
+
+/* =========================================
+   MULTIMEDIA UTILITIES — V2.3
+========================================= */
+
+const galleryVideoPlatforms = {
+  tiktok: "TikTok",
+  youtube: "YouTube",
+  facebook: "Facebook",
+  instagram: "Instagram",
+  vimeo: "Vimeo",
+  mp4: "MP4"
+};
+
+function mediaLabel(key) {
+
+  const labels = {
+    viewGallery: ["View gallery", "Xem bộ sưu tập"],
+    gallery: ["Project gallery", "Bộ sưu tập dự án"],
+    media: ["media", "nội dung"],
+    video: ["Video", "Video"],
+    play: ["Play video", "Phát video"],
+    openOriginal: ["Watch original video", "Xem video gốc"],
+    videoError: [
+      "Unable to play video. Please open the original.",
+      "Không thể phát video. Vui lòng mở video gốc."
+    ],
+    previous: ["Previous media", "Nội dung trước"],
+    next: ["Next media", "Nội dung tiếp theo"],
+    thumbnails: ["Gallery thumbnails", "Danh sách nội dung"]
+  };
+
+  return labels[key]?.[
+    currentLanguage === "vi" ? 1 : 0
+  ] || galleryLabel(key);
+
+}
+
+function getGalleryVideoSource(item) {
+
+  if (item.type !== "video") return null;
+
+  try {
+
+    const url = new URL(item.videoUrl);
+
+    if (
+      url.protocol !== "https:" ||
+      url.username ||
+      url.password ||
+      url.port
+    ) return null;
+
+    const host = url.hostname.toLowerCase();
+    const path = url.pathname;
+
+    let match;
+    let embed = "";
+
+    switch (item.platform) {
+
+      case "tiktok":
+
+        if (!["tiktok.com", "www.tiktok.com"]
+          .includes(host)) return null;
+
+        match = path.match(
+          /^\/@[^/]+\/video\/(\d+)\/?$/
+        );
+
+        if (!match) return null;
+
+        embed =
+          `https://www.tiktok.com/player/v1/${match[1]}`;
+
+        break;
+
+      case "youtube":
+
+        let id = "";
+
+        if (host === "youtu.be") {
+
+          id = path.slice(1).replace(/\/$/, "");
+
+        } else if ([
+          "youtube.com",
+          "www.youtube.com",
+          "m.youtube.com"
+        ].includes(host)) {
+
+          id = path === "/watch"
+            ? url.searchParams.get("v") || ""
+            : path.match(
+                /^\/shorts\/([a-zA-Z0-9_-]+)\/?$/
+              )?.[1] || "";
+
+        }
+
+        if (!/^[a-zA-Z0-9_-]{11}$/.test(id)) {
+          return null;
+        }
+
+        embed =
+          `https://www.youtube-nocookie.com/embed/${id}`;
+
+        break;
+
+      case "facebook":
+
+        if (![
+          "facebook.com",
+          "www.facebook.com",
+          "m.facebook.com",
+          "fb.watch"
+        ].includes(host) || path === "/") {
+          return null;
+        }
+
+        embed =
+          "https://www.facebook.com/plugins/video.php" +
+          "?href=" + encodeURIComponent(url.href) +
+          "&show_text=false";
+
+        break;
+
+      case "instagram":
+
+        if (![
+          "instagram.com",
+          "www.instagram.com"
+        ].includes(host)) return null;
+
+        match = path.match(
+          /^\/(reel|p|tv)\/([a-zA-Z0-9_-]+)\/?$/
+        );
+
+        if (!match) return null;
+
+        embed =
+          `https://www.instagram.com/${match[1]}/${match[2]}/embed/`;
+
+        break;
+
+      case "vimeo":
+
+        if (!["vimeo.com", "www.vimeo.com"]
+          .includes(host)) return null;
+
+        match = path.match(/^\/(\d+)\/?$/);
+
+        if (!match) return null;
+
+        embed =
+          `https://player.vimeo.com/video/${match[1]}`;
+
+        break;
+
+      case "mp4":
+
+        if (!/\.mp4$/i.test(path)) return null;
+
+        return {
+          type: "native",
+          src: url.href,
+          original: url.href
+        };
+
+      default:
+
+        return null;
+
+    }
+
+    return {
+      type: "iframe",
+      src: embed,
+      original: url.href
+    };
+
+  } catch {
+
+    return null;
+
+  }
+
+}
+
+function stopGalleryVideo(root) {
+
+  root.querySelectorAll("video").forEach(video => {
+
+    video.pause();
+    video.removeAttribute("src");
+    video.load();
+    video.remove();
+
+  });
+
+  root.querySelectorAll("iframe").forEach(frame => {
+
+    frame.src = "about:blank";
+    frame.remove();
+
+  });
+
+}
+
+function renderGalleryVideo(item, container) {
+
+  const source = getGalleryVideoSource(item);
+
+  if (!source) return;
+
+  const wrapper = create(
+    "div",
+    "gallery-video-wrapper"
+  );
+
+  wrapper.dataset.platform = item.platform;
+
+  const preview = create(
+    "div",
+    "gallery-video-preview"
+  );
+
+  const thumbnail = create(
+    "img",
+    "gallery-video-thumbnail"
+  );
+
+  thumbnail.alt = text(item.title, "Video");
+  thumbnail.decoding = "async";
+  thumbnail.draggable = false;
+  thumbnail.src = item.image;
+
+  const playButton = createGalleryButton(
+    "▶",
+    mediaLabel("play"),
+    "gallery-video-play",
+    startVideo
+  );
+
+  const platform = create(
+    "span",
+    "gallery-video-platform",
+    galleryVideoPlatforms[item.platform] || "Video"
+  );
+
+  preview.append(
+    thumbnail,
+    playButton,
+    platform
+  );
+
+  const player = create(
+    "div",
+    "gallery-video-player"
+  );
+
+  player.hidden = true;
+
+  const originalLink = createExternalLink(
+    mediaLabel("openOriginal") + " ↗",
+    source.original,
+    "gallery-video-original"
+  );
+
+  wrapper.append(preview, player);
+
+  if (originalLink) {
+    wrapper.appendChild(originalLink);
+  }
+
+  container.appendChild(wrapper);
+
+  function startVideo() {
+
+    if (
+      activeGallery?.closing ||
+      !wrapper.isConnected
+    ) return;
+
+    stopGalleryVideo(player);
+
+    preview.hidden = true;
+    player.hidden = false;
+
+    if (source.type === "native") {
+
+      const video = create(
+        "video",
+        "gallery-video-element"
+      );
+
+      video.controls = true;
+      video.playsInline = true;
+      video.preload = "metadata";
+
+      video.addEventListener("error", () => {
+
+        player.replaceChildren(
+          create(
+            "p",
+            "gallery-video-error",
+            mediaLabel("videoError")
+          )
+        );
+
+      });
+
+      video.src = source.src;
+
+      player.appendChild(video);
+
+      video.play().catch(() => {});
+
+    } else {
+
+      const iframe = create(
+        "iframe",
+        "gallery-video-iframe"
+      );
+
+      iframe.title = text(
+        item.title,
+        mediaLabel("play")
+      );
+
+      iframe.allow =
+        "autoplay; encrypted-media; " +
+        "fullscreen; picture-in-picture";
+
+      iframe.allowFullscreen = true;
+
+      iframe.referrerPolicy =
+        "strict-origin-when-cross-origin";
+
+      iframe.src = source.src;
+
+      player.appendChild(iframe);
+
+      iframe.focus({
+        preventScroll: true
+      });
+
+    }
+
+  }
+
+}
+
+   
+
 function getProjectGallery(project) {
 
   return array(project.gallery)
-    .filter(item => validImage(item.image))
+    .filter(item => {
+
+      if (!validImage(item.image)) {
+        return false;
+      }
+
+      if (item.type === "video") {
+        return Boolean(getGalleryVideoSource(item));
+      }
+
+      return !item.type || item.type === "image";
+
+    })
     .slice(0, 20);
 
 }
+
 
 function createGalleryButton(
   symbol,
@@ -666,7 +1033,11 @@ function closeProjectGallery(immediate = false) {
 
   if (!gallery || gallery.closing) return;
 
-  gallery.closing = true;
+  
+gallery.closing = true;
+
+stopGalleryVideo(gallery.dialog);
+
 
   const finish = () => {
 
@@ -869,51 +1240,107 @@ function openProjectGallery(project, trigger) {
     galleryLabel("thumbnails")
   );
 
-  const thumbnailButtons = items.map(
-    (item, index) => {
+  
+const thumbnailButtons = items.map(
+  (item, index) => {
 
-      const button = createGalleryButton(
-        "",
-        `${galleryLabel("image")} ${index + 1}`,
-        "gallery-thumbnail",
-        () => showImage(index)
+    const isVideo = item.type === "video";
+
+    const button = createGalleryButton(
+      "",
+      `${mediaLabel(isVideo ? "video" : "image")} ${index + 1}`,
+      "gallery-thumbnail",
+      () => showImage(index)
+    );
+
+    const image = create(
+      "img",
+      "gallery-thumbnail-image"
+    );
+
+    image.alt = "";
+    image.loading = "lazy";
+    image.decoding = "async";
+    image.src = item.image;
+
+    button.appendChild(image);
+
+    if (isVideo) {
+
+      button.classList.add("is-video");
+
+      const playIcon = create(
+        "span",
+        "gallery-thumbnail-play",
+        "▶"
       );
 
-      const image = create(
-        "img",
-        "gallery-thumbnail-image"
+      playIcon.setAttribute(
+        "aria-hidden",
+        "true"
       );
 
-      image.src = item.image;
-      image.alt = "";
-      image.loading = "lazy";
-      image.decoding = "async";
-
-      button.appendChild(image);
-
-      thumbnails.appendChild(button);
-
-      return button;
+      button.appendChild(playIcon);
 
     }
-  );
+
+    thumbnails.appendChild(button);
+
+    return button;
+
+  }
+);
+
 
   // Image navigation
 
-  function showImage(index) {
+ 
+function showImage(index) {
 
-    if (activeGallery?.closing) return;
+  if (activeGallery?.closing) return;
 
-    currentIndex =
-      (index + items.length) % items.length;
+  currentIndex =
+    (index + items.length) % items.length;
 
-    const item = items[currentIndex];
+  const item = items[currentIndex];
 
-    const request = ++imageRequest;
+  const request = ++imageRequest;
 
-    imageFrame.querySelectorAll(
-      ".gallery-main-image"
-    ).forEach(image => image.remove());
+  const isVideo = item.type === "video";
+
+  pointerStart = null;
+
+  // Stop previous video
+
+  stopGalleryVideo(imageFrame);
+
+  // Remove previous media
+
+  imageFrame.querySelectorAll(
+    ".gallery-main-image, .gallery-video-wrapper"
+  ).forEach(media => media.remove());
+
+  stage.classList.toggle(
+    "is-video",
+    isVideo
+  );
+
+  imageFrame.classList.toggle(
+    "is-video",
+    isVideo
+  );
+
+  imageStatus.hidden = true;
+
+  // Video rendering
+
+  if (isVideo) {
+
+    renderGalleryVideo(item, imageFrame);
+
+  } else {
+
+    // Original image rendering
 
     imageStatus.textContent =
       galleryLabel("loading");
@@ -937,7 +1364,8 @@ function openProjectGallery(project, trigger) {
 
       if (
         request !== imageRequest ||
-        !dialog.open
+        !dialog.open ||
+        activeGallery?.closing
       ) return;
 
       imageStatus.hidden = true;
@@ -956,7 +1384,8 @@ function openProjectGallery(project, trigger) {
 
       if (
         request !== imageRequest ||
-        !dialog.open
+        !dialog.open ||
+        activeGallery?.closing
       ) return;
 
       imageStatus.textContent =
@@ -968,67 +1397,90 @@ function openProjectGallery(project, trigger) {
 
     image.src = item.image;
 
-    captionTitle.textContent =
-      text(item.title);
+  }
 
-    captionDescription.textContent =
-      text(item.description);
+  // Caption
 
-    captionTitle.hidden =
-      !text(item.title);
+  captionTitle.textContent =
+    text(item.title);
 
-    captionDescription.hidden =
-      !text(item.description);
+  captionDescription.textContent =
+    text(item.description);
 
-    counter.textContent =
-      `${formatIndex(currentIndex)} / ${String(items.length).padStart(2, "0")}`;
+  captionTitle.hidden =
+    !text(item.title);
 
-    thumbnailButtons.forEach(
-      (button, buttonIndex) => {
+  captionDescription.hidden =
+    !text(item.description);
 
-        const selected =
-          buttonIndex === currentIndex;
+  counter.textContent =
+    `${formatIndex(currentIndex)} / ${String(items.length).padStart(2, "0")}`;
 
-        button.classList.toggle(
-          "is-active",
-          selected
-        );
+  // Active thumbnail
 
-        button.setAttribute(
-          "aria-pressed",
-          String(selected)
-        );
+  thumbnailButtons.forEach(
+    (button, buttonIndex) => {
 
-      }
-    );
+      const selected =
+        buttonIndex === currentIndex;
 
-    const selectedThumbnail =
-      thumbnailButtons[currentIndex];
+      button.classList.toggle(
+        "is-active",
+        selected
+      );
 
-    if (selectedThumbnail) {
-
-      const offset =
-        selectedThumbnail.offsetLeft -
-        thumbnails.offsetLeft -
-        (thumbnails.clientWidth -
-          selectedThumbnail.offsetWidth) / 2;
-
-      thumbnails.scrollTo({
-        left: offset,
-        behavior: reducedMotion.matches
-          ? "auto"
-          : "smooth"
-      });
+      button.setAttribute(
+        "aria-pressed",
+        String(selected)
+      );
 
     }
+  );
+
+  // Center active thumbnail
+
+  const selectedThumbnail =
+    thumbnailButtons[currentIndex];
+
+  if (selectedThumbnail) {
+
+    const stripBounds =
+      thumbnails.getBoundingClientRect();
+
+    const thumbnailBounds =
+      selectedThumbnail.getBoundingClientRect();
+
+    const offset =
+      thumbnails.scrollLeft +
+      thumbnailBounds.left -
+      stripBounds.left -
+      (thumbnails.clientWidth -
+        thumbnailBounds.width) / 2;
+
+    thumbnails.scrollTo({
+      left: offset,
+      behavior: reducedMotion.matches
+        ? "auto"
+        : "smooth"
+    });
 
   }
 
-  // Keyboard navigation
+}
 
-  dialog.addEventListener(
-    "keydown",
-    event => {
+
+  
+// Keyboard navigation
+
+dialog.addEventListener(
+  "keydown",
+  event => {
+
+    if (
+      event.target.closest(
+        ".gallery-video-wrapper"
+      )
+    ) return;
 
       if (event.key === "ArrowLeft") {
 
@@ -1078,10 +1530,14 @@ function openProjectGallery(project, trigger) {
     "pointerdown",
     event => {
 
-      if (
-        event.pointerType === "mouse" ||
-        event.target.closest("button")
-      ) return;
+     
+if (
+  event.pointerType === "mouse" ||
+  event.target.closest(
+    "button, a, video, iframe, .gallery-video-player"
+  )
+) return;
+
 
       pointerStart = {
         x: event.clientX,
@@ -1239,7 +1695,11 @@ function attachProjectGallery(visual, project) {
   const count = create(
     "span",
     "work-gallery-count",
-    `${items.length} ${galleryLabel("images")}`
+    
+`${items.length} ${items.some(
+  item => item.type === "video"
+) ? mediaLabel("media") : galleryLabel("images")}`
+
   );
 
   content.append(
