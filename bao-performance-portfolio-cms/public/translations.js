@@ -34,8 +34,21 @@
         title: "Campaign thinking, made visible.",
         role: "My role",
         results: "Results & achievements",
-        viewProject: "View project",
+                viewProject: "View project",
         projects: "Projects"
+      },
+
+      gallery: {
+        viewGallery: "View gallery",
+        projectGallery: "Project gallery",
+        image: "Image",
+        images: "Images",
+        previousImage: "Previous image",
+        nextImage: "Next image",
+        closeGallery: "Close gallery",
+        loadingImage: "Loading image...",
+        imageError: "Unable to load image",
+        viewImage: "View image"
       },
 
       experience: {
@@ -110,8 +123,21 @@
         title: "Từ chiến lược đến thực thi.",
         role: "Vai trò của tôi",
         results: "Kết quả & thành tựu",
-        viewProject: "Xem dự án",
+                viewProject: "Xem dự án",
         projects: "Dự án"
+      },
+
+      gallery: {
+        viewGallery: "Xem thư viện ảnh",
+        projectGallery: "Hình ảnh dự án",
+        image: "Hình ảnh",
+        images: "Hình ảnh",
+        previousImage: "Ảnh trước",
+        nextImage: "Ảnh tiếp theo",
+        closeGallery: "Đóng thư viện ảnh",
+        loadingImage: "Đang tải ảnh...",
+        imageError: "Không thể tải ảnh",
+        viewImage: "Xem ảnh"
       },
 
       experience: {
