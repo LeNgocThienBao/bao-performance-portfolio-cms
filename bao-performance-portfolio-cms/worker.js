@@ -66,7 +66,7 @@ function normalizeContent(saved = {}) {
       ...(saved.contact || {})
     },
 
-    projects: (
+        projects: (
       Array.isArray(saved.projects)
         ? saved.projects
         : DEFAULT_CONTENT.projects
@@ -80,7 +80,10 @@ function normalizeContent(saved = {}) {
       role: "",
       results: "",
       link: "",
-      ...project
+      ...project,
+      gallery: Array.isArray(project.gallery)
+        ? project.gallery
+        : []
     })),
 
     workExperience: Array.isArray(saved.workExperience)
@@ -293,6 +296,92 @@ async function validateMedia(value, env, kind = "image") {
   return value;
 }
 
+// ==================================================
+// PORTFOLIO V2.2 - PROJECT GALLERY
+// ==================================================
+
+const MAX_PROJECT_GALLERY = 20;
+
+async function sanitizeProjectGallery(
+  value,
+  env,
+  previous = []
+) {
+
+  if (!Array.isArray(value)) {
+    throw new Error("Dữ liệu Gallery không hợp lệ.");
+  }
+
+  if (value.length > MAX_PROJECT_GALLERY) {
+    throw new Error(
+      "Mỗi dự án chỉ hỗ trợ tối đa 20 ảnh."
+    );
+  }
+
+  const gallery = [];
+  const ids = new Set();
+
+  const previousItems = new Map(
+    previous.map(item => [item.id, item])
+  );
+
+  for (const item of value) {
+
+    if (
+      !item ||
+      typeof item !== "object" ||
+      Array.isArray(item)
+    ) {
+      throw new Error("Dữ liệu ảnh không hợp lệ.");
+    }
+
+    const id =
+      cleanText(item.id, 100) ||
+      crypto.randomUUID();
+
+    if (ids.has(id)) {
+      throw new Error("ID ảnh Gallery bị trùng.");
+    }
+
+    ids.add(id);
+
+    const oldItem = previousItems.get(id);
+
+    const image = cleanText(
+      item.image,
+      500
+    );
+
+    if (!image) {
+      throw new Error("Ảnh Gallery không được để trống.");
+    }
+
+    const key = mediaKey(image);
+
+    if (!key || key.endsWith(".pdf")) {
+      throw new Error("Đường dẫn ảnh Gallery không hợp lệ.");
+    }
+
+    const validatedImage =
+      oldItem?.image === image
+        ? image
+        : await validateMedia(image, env, "image");
+
+    gallery.push({
+      id,
+      image: validatedImage,
+      title: cleanText(item.title, 180),
+      description: cleanText(item.description, 1000)
+    });
+
+  }
+
+  return gallery;
+
+}
+
+// END PROJECT GALLERY
+// ==================================================
 
 // ==================================================
 // PORTFOLIO V2.1 - MULTILINGUAL CONTENT
@@ -404,6 +493,74 @@ function sanitizeVietnameseContent(value, base) {
       results: 3000
     }
   );
+
+  // Project Gallery translations - V2.2
+
+const originalProjects = new Map(
+  base.projects.map(project => [
+    project.id,
+    project
+  ])
+);
+
+const translatedProjects = new Map(
+  vi.projects.map(project => [
+    project.id,
+    project
+  ])
+);
+
+const sourceProjects = Array.isArray(value.projects)
+  ? value.projects
+  : [];
+
+for (const source of sourceProjects) {
+
+  if (
+    !source ||
+    typeof source !== "object" ||
+    Array.isArray(source)
+  ) {
+    continue;
+  }
+
+  const projectId = cleanText(source.id, 100);
+
+  const original = originalProjects.get(projectId);
+
+  if (!original) continue;
+
+  if (!Array.isArray(source.gallery)) continue;
+
+  let translated = translatedProjects.get(projectId);
+
+  if (!translated) {
+
+    translated = {
+      id: projectId
+    };
+
+    vi.projects.push(translated);
+
+    translatedProjects.set(
+      projectId,
+      translated
+    );
+
+  }
+
+  translated.gallery = cleanTranslationRecords(
+    source.gallery,
+    Array.isArray(original.gallery)
+      ? original.gallery
+      : [],
+    {
+      title: 180,
+      description: 1000
+    }
+  );
+
+}
 
   vi.workExperience = cleanTranslationRecords(
     value.workExperience,
@@ -1048,13 +1205,33 @@ try {
           }
 
           if (Object.hasOwn(p, "image")) {
-            project.image = await validateMedia(
-              cleanText(p.image, 500),
-              env
-            );
-          }
+  project.image = await validateMedia(
+    cleanText(p.image, 500),
+    env
+  );
+}
 
-          projects.push(project);
+// Project Gallery - V2.2
+
+if (Object.hasOwn(p, "gallery")) {
+
+  project.gallery = await sanitizeProjectGallery(
+    p.gallery,
+    env,
+    Array.isArray(previous?.gallery)
+      ? previous.gallery
+      : []
+  );
+
+} else {
+
+  project.gallery = Array.isArray(previous?.gallery)
+    ? previous.gallery
+    : [];
+
+}
+
+projects.push(project);
         }
 
       } catch (error) {
@@ -1189,6 +1366,31 @@ try {
           ...existingVI,
           ...vi
         };
+
+        if (Array.isArray(vi.projects)) {
+
+  const previousTranslations = new Map(
+    (existingVI.projects || []).map(project => [
+      project.id,
+      project
+    ])
+  );
+
+  vietnameseContent.projects = vi.projects.map(project => {
+
+    const previous = previousTranslations.get(project.id);
+
+    return {
+      ...previous,
+      ...project,
+      gallery: Object.hasOwn(project, "gallery")
+        ? project.gallery
+        : previous?.gallery || []
+    };
+
+  });
+
+}
 
         if (Object.hasOwn(vi, "contact")) {
           vietnameseContent.contact = {
