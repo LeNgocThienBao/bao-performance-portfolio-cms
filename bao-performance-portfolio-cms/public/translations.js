@@ -39,17 +39,17 @@
       },
 
       gallery: {
-        viewGallery: "View gallery",
-        projectGallery: "Project gallery",
-        image: "Image",
-        images: "Images",
-        previousImage: "Previous image",
-        nextImage: "Next image",
-        closeGallery: "Close gallery",
-        loadingImage: "Loading image...",
-        imageError: "Unable to load image",
-        viewImage: "View image"
-      },
+  viewGallery: "View gallery",
+  close: "Close gallery",
+  previous: "Previous image",
+  next: "Next image",
+  image: "Image",
+  images: "images",
+  thumbnails: "Gallery thumbnails",
+  loading: "Loading image...",
+  error: "Unable to load image.",
+  gallery: "Project gallery"
+},
 
       experience: {
         label: "Career journey",
@@ -128,17 +128,17 @@
       },
 
       gallery: {
-        viewGallery: "Xem thư viện ảnh",
-        projectGallery: "Hình ảnh dự án",
-        image: "Hình ảnh",
-        images: "Hình ảnh",
-        previousImage: "Ảnh trước",
-        nextImage: "Ảnh tiếp theo",
-        closeGallery: "Đóng thư viện ảnh",
-        loadingImage: "Đang tải ảnh...",
-        imageError: "Không thể tải ảnh",
-        viewImage: "Xem ảnh"
-      },
+  viewGallery: "Xem bộ ảnh",
+  close: "Đóng bộ ảnh",
+  previous: "Ảnh trước",
+  next: "Ảnh tiếp theo",
+  image: "Ảnh",
+  images: "ảnh",
+  thumbnails: "Danh sách ảnh",
+  loading: "Đang tải ảnh...",
+  error: "Không thể tải ảnh.",
+  gallery: "Hình ảnh dự án"
+},
 
       experience: {
         label: "Hành trình nghề nghiệp",
