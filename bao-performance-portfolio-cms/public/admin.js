@@ -22,6 +22,7 @@ const API = {
 
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 const MAX_PDF_SIZE = 10 * 1024 * 1024;
+const MAX_PROJECT_GALLERY = 20;
 
 const IMAGE_TYPES = [
   "image/jpeg",
@@ -290,6 +291,45 @@ function normalizeContent(data = {}) {
       : [];
   }
 
+    // Project Gallery - V2.2
+
+  result.projects = result.projects.map(project => {
+    const ids = new Set();
+
+    const gallery = Array.isArray(project.gallery)
+      ? project.gallery
+      : [];
+
+    return {
+      ...project,
+
+      gallery: gallery
+        .filter(item =>
+          item &&
+          typeof item === "object" &&
+          !Array.isArray(item)
+        )
+        .map(item => {
+
+          let id = item.id || uid();
+
+          if (ids.has(id)) {
+            id = uid();
+          }
+
+          ids.add(id);
+
+          return {
+            id,
+            image: item.image || "",
+            title: item.title || "",
+            description: item.description || ""
+          };
+
+        })
+    };
+  });
+   
   for (const key of ["competencies", "tools"]) {
     result[key] = result[key].map(group => ({
       ...group,
@@ -2158,6 +2198,551 @@ function addButton(label, handler) {
 
 
 /* =========================================
+   16A. PROJECT GALLERY EDITOR — V2.2
+========================================= */
+
+function getGalleryTranslation(
+  project,
+  item,
+  create = false
+) {
+
+  const target = getTranslationTarget(
+    project,
+    "title",
+    create
+  );
+
+  if (!target) return {};
+
+  if (!Array.isArray(target.gallery)) {
+
+    if (!create) return {};
+
+    target.gallery = [];
+
+  }
+
+  let translated = target.gallery.find(
+    record => record.id === item.id
+  );
+
+  if (!translated && create) {
+
+    translated = {
+      id: item.id,
+      title: "",
+      description: ""
+    };
+
+    target.gallery.push(translated);
+
+  }
+
+  return translated || {};
+
+}
+
+
+function galleryField(
+  project,
+  item,
+  key,
+  label,
+  options = {}
+) {
+
+  if (state.language === "en") {
+
+    return field(
+      `${label} · EN`,
+      item[key] || "",
+      value => {
+        item[key] = value;
+      },
+      options
+    );
+
+  }
+
+  const translated = getGalleryTranslation(
+    project,
+    item
+  );
+
+  return field(
+    `${label} · VI`,
+    translated[key] || "",
+    value => {
+
+      const target = getGalleryTranslation(
+        project,
+        item,
+        true
+      );
+
+      target[key] = value;
+
+    },
+    {
+      ...options,
+      placeholder:
+        item[key] || "Enter Vietnamese content",
+      hint:
+        "Leave blank to use English content."
+    }
+  );
+
+}
+
+
+function renderProjectGallery(project) {
+
+  if (!Array.isArray(project.gallery)) {
+    project.gallery = [];
+  }
+
+  const gallery = project.gallery;
+
+  const panel = el(
+    "div",
+    "project-gallery-editor"
+  );
+
+  const header = el(
+    "div",
+    "gallery-editor-header"
+  );
+
+  const heading = el(
+    "div",
+    "gallery-editor-heading"
+  );
+
+  heading.append(
+    el("h3", "", "Project Gallery"),
+    el(
+      "p",
+      "gallery-editor-description",
+      "Manage project evidence and visuals."
+    )
+  );
+
+  const count = el(
+    "span",
+    "gallery-editor-count"
+  );
+
+  header.append(heading, count);
+
+  const input = el("input", "hidden");
+
+  input.type = "file";
+  input.multiple = true;
+  input.accept = IMAGE_TYPES.join(",");
+
+  const uploadButton = button(
+    "＋ Upload images",
+    "gallery-upload-button",
+    () => {
+
+      if (isBusy()) return;
+
+      if (gallery.length >= MAX_PROJECT_GALLERY) {
+        toast(
+          "Gallery đã đạt giới hạn 20 ảnh.",
+          "warning"
+        );
+
+        return;
+      }
+
+      input.click();
+
+    }
+  );
+
+  const uploadNote = el(
+    "p",
+    "gallery-upload-note",
+    "JPG, PNG, WebP, GIF · Max 5 MB/image"
+  );
+
+  const status = el(
+    "div",
+    "status hidden"
+  );
+
+  const progress = el(
+    "div",
+    "progress-track hidden"
+  );
+
+  progress.append(
+    el("div", "progress-bar indeterminate")
+  );
+
+  const list = el(
+    "div",
+    "gallery-editor-list"
+  );
+
+
+  function moveImage(index, direction) {
+
+    if (isBusy()) return;
+
+    const target = index + direction;
+
+    if (target < 0 || target >= gallery.length) {
+      return;
+    }
+
+    [gallery[index], gallery[target]] = [
+      gallery[target],
+      gallery[index]
+    ];
+
+    markDirty();
+
+    renderGalleryItems();
+
+  }
+
+
+  function removeImage(index) {
+
+    if (isBusy()) return;
+
+    if (!confirm(
+      "Bạn muốn gỡ ảnh này khỏi Gallery?"
+    )) {
+      return;
+    }
+
+    const item = gallery[index];
+
+    if (!item) return;
+
+    const translated = getTranslationTarget(
+      project,
+      "title"
+    );
+
+    if (Array.isArray(translated?.gallery)) {
+
+      translated.gallery =
+        translated.gallery.filter(
+          record => record.id !== item.id
+        );
+
+    }
+
+    gallery.splice(index, 1);
+
+    markDirty();
+
+    renderGalleryItems();
+
+    toast(
+      "Đã gỡ ảnh. Nhấn Save changes để lưu."
+    );
+
+  }
+
+
+  function renderGalleryItems() {
+
+    count.textContent =
+      `${gallery.length}/${MAX_PROJECT_GALLERY} images`;
+
+    uploadButton.disabled =
+      gallery.length >= MAX_PROJECT_GALLERY;
+
+    list.replaceChildren();
+
+    if (!gallery.length) {
+
+      list.append(
+        el(
+          "div",
+          "gallery-empty",
+          "No gallery images yet."
+        )
+      );
+
+      return;
+
+    }
+
+    gallery.forEach((item, index) => {
+
+      const node = el(
+        "div",
+        "gallery-editor-item"
+      );
+
+      const itemHeader = el(
+        "div",
+        "gallery-item-header"
+      );
+
+      const itemTitle = el(
+        "strong",
+        "gallery-item-title",
+        `Image ${String(index + 1).padStart(2, "0")}`
+      );
+
+      const actions = el(
+        "div",
+        "gallery-item-actions"
+      );
+
+      const up = button(
+        "↑",
+        "icon-button",
+        () => moveImage(index, -1)
+      );
+
+      up.disabled = index === 0;
+      up.title = "Move image up";
+      up.setAttribute(
+        "aria-label",
+        "Move image up"
+      );
+
+      const down = button(
+        "↓",
+        "icon-button",
+        () => moveImage(index, 1)
+      );
+
+      down.disabled =
+        index === gallery.length - 1;
+
+      down.title = "Move image down";
+      down.setAttribute(
+        "aria-label",
+        "Move image down"
+      );
+
+      const remove = button(
+        "Remove",
+        "btn btn-danger btn-sm",
+        () => removeImage(index)
+      );
+
+      actions.append(up, down, remove);
+
+      itemHeader.append(itemTitle, actions);
+
+      const body = el(
+        "div",
+        "gallery-item-body"
+      );
+
+      const media = mediaEditor(
+        item,
+        "image",
+        {
+          title: "Gallery Image"
+        }
+      );
+
+      // Gallery images must always have a file.
+      // Remove the entire item instead of clearing
+      // its image URL.
+
+      const removeMedia =
+        media.querySelector(".btn-danger");
+
+      if (removeMedia) {
+        removeMedia.remove();
+      }
+
+      const fields = el(
+        "div",
+        "gallery-item-fields"
+      );
+
+      fields.append(
+        galleryField(
+          project,
+          item,
+          "title",
+          "Image title",
+          {
+            max: 180
+          }
+        ),
+
+        galleryField(
+          project,
+          item,
+          "description",
+          "Image description",
+          {
+            max: 1000,
+            multiline: true
+          }
+        )
+      );
+
+      body.append(media, fields);
+
+      node.append(itemHeader, body);
+
+      list.append(node);
+
+    });
+
+  }
+
+
+  input.addEventListener(
+    "change",
+    async () => {
+
+      const files = Array.from(input.files || []);
+
+      input.value = "";
+
+      if (!files.length || isBusy()) return;
+
+      const available =
+        MAX_PROJECT_GALLERY - gallery.length;
+
+      if (files.length > available) {
+
+        toast(
+          `Bạn chỉ có thể thêm ${available} ảnh.`,
+          "warning"
+        );
+
+        return;
+
+      }
+
+      state.activeUploads++;
+
+      const unlock = lockEditor();
+
+      syncUI();
+
+      show(progress);
+
+      let uploaded = 0;
+
+      const failed = [];
+
+      try {
+
+        for (let i = 0; i < files.length; i++) {
+
+          const file = files[i];
+
+          setStatus(
+            status,
+            `Uploading ${i + 1}/${files.length}: ${file.name}`
+          );
+
+          try {
+
+            const url = await uploadMedia(
+              file,
+              "image"
+            );
+
+            gallery.push({
+              id: uid(),
+              image: url,
+              title: "",
+              description: ""
+            });
+
+            uploaded++;
+
+            markDirty();
+
+          } catch (error) {
+
+            failed.push(
+              `${file.name}: ${error.message}`
+            );
+
+          }
+
+        }
+
+      } finally {
+
+        state.activeUploads--;
+
+        unlock();
+
+        hide(progress);
+
+        renderGalleryItems();
+
+        syncUI();
+
+      }
+
+      if (failed.length) {
+
+        setStatus(
+          status,
+          `Uploaded ${uploaded}/${files.length}. ` +
+          failed.join(" | "),
+          "warning"
+        );
+
+        toast(
+          `${failed.length} ảnh upload thất bại.`,
+          "warning"
+        );
+
+      } else {
+
+        setStatus(
+          status,
+          `Uploaded ${uploaded} images. ` +
+          "Nhấn Save changes để lưu.",
+          "success"
+        );
+
+        toast(
+          `Upload thành công ${uploaded} ảnh.`
+        );
+
+      }
+
+    }
+  );
+
+
+  panel.append(
+    header,
+    input,
+    uploadButton,
+    uploadNote,
+    progress,
+    status,
+    list
+  );
+
+  renderGalleryItems();
+
+  return panel;
+
+}
+
+/* =========================================
+   END PROJECT GALLERY EDITOR
+========================================= */
+
+   
+/* =========================================
    17. SELECTED WORK
 ========================================= */
 
@@ -2286,7 +2871,10 @@ function renderProjects(root) {
       )
     );
 
-    node.append(grid);
+        node.append(
+      grid,
+      renderProjectGallery(project)
+    );
 
     list.append(node);
   });
@@ -2294,7 +2882,7 @@ function renderProjects(root) {
   list.append(
     addButton(
       "Add new project",
-      () => addRecord(key, {
+            () => addRecord(key, {
         title: "",
         category: "",
         meta: "",
@@ -2302,7 +2890,8 @@ function renderProjects(root) {
         description: "",
         results: "",
         link: "",
-        image: ""
+        image: "",
+        gallery: []
       })
     )
   );
@@ -3181,6 +3770,52 @@ function validateContent(data) {
       );
     }
 
+         // Project Gallery validation - V2.2
+
+    if (
+      !Array.isArray(project.gallery) ||
+      project.gallery.length > MAX_PROJECT_GALLERY
+    ) {
+      throw new Error(
+        `Project ${index + 1}: Gallery không hợp lệ.`
+      );
+    }
+
+    const galleryIds = new Set();
+
+    project.gallery.forEach((item, imageIndex) => {
+
+      const label =
+        `Project ${index + 1} - Image ${imageIndex + 1}`;
+
+      if (!item.id || galleryIds.has(item.id)) {
+        throw new Error(
+          `${label}: ID ảnh không hợp lệ.`
+        );
+      }
+
+      galleryIds.add(item.id);
+
+      if (!validMediaUrl(item.image)) {
+        throw new Error(
+          `${label}: Đường dẫn ảnh không hợp lệ.`
+        );
+      }
+
+      if ((item.title || "").length > 180) {
+        throw new Error(
+          `${label}: Tiêu đề vượt quá 180 ký tự.`
+        );
+      }
+
+      if ((item.description || "").length > 1000) {
+        throw new Error(
+          `${label}: Mô tả vượt quá 1000 ký tự.`
+        );
+      }
+
+    });
+     
     validateURL(
       project.link,
       `Project ${index + 1}`
