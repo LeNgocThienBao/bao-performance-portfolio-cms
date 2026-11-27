@@ -644,27 +644,7 @@ const galleryVideoPlatforms = {
 };
 
 function mediaLabel(key) {
-
-  const labels = {
-    viewGallery: ["View gallery", "Xem bộ sưu tập"],
-    gallery: ["Project gallery", "Bộ sưu tập dự án"],
-    media: ["media", "nội dung"],
-    video: ["Video", "Video"],
-    play: ["Play video", "Phát video"],
-    openOriginal: ["Watch original video", "Xem video gốc"],
-    videoError: [
-      "Unable to play video. Please open the original.",
-      "Không thể phát video. Vui lòng mở video gốc."
-    ],
-    previous: ["Previous media", "Nội dung trước"],
-    next: ["Next media", "Nội dung tiếp theo"],
-    thumbnails: ["Gallery thumbnails", "Danh sách nội dung"]
-  };
-
-  return labels[key]?.[
-    currentLanguage === "vi" ? 1 : 0
-  ] || galleryLabel(key);
-
+  return galleryLabel(key);
 }
 
 function getGalleryVideoSource(item) {
