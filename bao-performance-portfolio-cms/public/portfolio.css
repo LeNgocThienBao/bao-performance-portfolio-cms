@@ -718,10 +718,43 @@ svg {
   margin-bottom: 24px;
 }
 
-
 /* ==================================================
    08. SELECTED WORK
 ================================================== */
+
+.work-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(12, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.work-card {
+  grid-column: span 6;
+  min-width: 0;
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  transition:
+    transform .45s var(--ease),
+    box-shadow .45s var(--ease);
+}
+
+.work-card:nth-child(4n + 1),
+.work-card:nth-child(4n + 4) {
+  grid-column: span 7;
+}
+
+.work-card:nth-child(4n + 2),
+.work-card:nth-child(4n + 3) {
+  grid-column: span 5;
+}
+
+.work-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow);
+}
 
 .work-visual {
   position: relative;
@@ -767,6 +800,168 @@ svg {
 
 }
 
+.work-placeholder {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background:
+    radial-gradient(
+      circle at 75% 25%,
+      rgba(255,255,255,.2),
+      transparent 45%
+    ),
+    var(--accent);
+}
+
+.work-placeholder::before {
+  content: "";
+  position: absolute;
+  width: 55%;
+  aspect-ratio: 1;
+  border: 1px solid rgba(255,255,255,.3);
+  border-radius: 50%;
+}
+
+.work-placeholder-number {
+  position: relative;
+  color: rgba(255,255,255,.9);
+  font-size: clamp(64px, 9vw, 140px);
+  font-weight: 750;
+  letter-spacing: -.09em;
+  line-height: 1;
+}
+
+.work-card:nth-child(4n + 2)
+.work-placeholder {
+  background: #d6d0c4;
+}
+
+.work-card:nth-child(4n + 3)
+.work-placeholder {
+  background: #343630;
+}
+
+.work-card:nth-child(4n + 4)
+.work-placeholder {
+  background: #c8c1d8;
+}
+
+.work-index {
+  position: absolute;
+  z-index: 3;
+  top: 16px;
+  left: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 42px;
+  height: 32px;
+  padding-inline: 12px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.92);
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 750;
+}
+
+.work-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 30px;
+}
+
+.work-meta,
+.work-category {
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+
+.work-title {
+  font-size: clamp(25px, 2.7vw, 38px);
+  font-weight: 750;
+  letter-spacing: -.045em;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+.work-description,
+.work-desc {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.8;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.work-role {
+  display: grid;
+  gap: 5px;
+  width: 100%;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+.work-role-label,
+.work-results-label {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.work-role-value {
+  font-size: 13px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.work-results {
+  width: 100%;
+  display: grid;
+  gap: 8px;
+  padding: 18px;
+  border-radius: var(--radius-sm);
+  background: var(--paper);
+}
+
+.work-results p {
+  font-size: 14px;
+  line-height: 1.7;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.work-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.work-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 750;
+  color: var(--ink);
+}
+
+.work-link:hover {
+  color: var(--accent);
+}
 
 /* ==================================================
    09. CAREER JOURNEY / WORK EXPERIENCE
