@@ -22,9 +22,9 @@
 
   <title>Portfolio Admin — Bao Le</title>
 
-<link rel="stylesheet" href="/admin.css?v=2.2">
+<link rel="stylesheet" href="/admin.css?v=2.3">
 
-<script src="/admin.js?v=2.2" defer></script>
+<script src="/admin.js?v=2.3" defer></script>
 
 </head>
 
@@ -54,8 +54,8 @@
           </strong>
 
           <small>
-            CMS / VERSION 2
-          </small>
+            CMS / VERSION 2.3
+         </small>
 
         </div>
 
@@ -159,7 +159,7 @@
           </strong>
 
           <small>
-            CMS / VERSION 2
+            CMS / VERSION 2.3
           </small>
 
         </div>
@@ -573,9 +573,8 @@
         </button>
 
         <div class="sidebar-version">
-         PORTFOLIO CMS · V2.2
-      </div>
-
+           PORTFOLIO CMS · V2.3
+       </div>
       </div>
 
     </aside>
