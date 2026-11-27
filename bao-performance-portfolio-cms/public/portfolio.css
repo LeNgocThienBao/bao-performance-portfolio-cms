@@ -3203,3 +3203,619 @@ svg {
 /* ==================================================
    END PROJECT GALLERY & LIGHTBOX
 ================================================== */
+
+
+/* ==================================================
+   PORTFOLIO V2.3
+   MULTIMEDIA GALLERY & VIDEO PLAYER
+================================================== */
+
+
+/* =========================================
+   01. VIDEO STAGE
+========================================= */
+
+.gallery-stage.is-video {
+  height: clamp(300px, 62vh, 720px);
+  height: clamp(300px, 62dvh, 720px);
+
+  background: #11120f;
+  touch-action: auto;
+}
+
+.gallery-image-frame.is-video {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+
+  padding: 16px 64px;
+}
+
+
+/* =========================================
+   02. VIDEO WRAPPER
+========================================= */
+
+.gallery-video-wrapper {
+  position: relative;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  gap: 12px;
+
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+
+  animation:
+    galleryVideoReveal .35s var(--ease) both;
+}
+
+@keyframes galleryVideoReveal {
+
+  from {
+    opacity: 0;
+    transform: scale(.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+}
+
+
+/* =========================================
+   03. VIDEO THUMBNAIL PREVIEW
+========================================= */
+
+.gallery-video-preview {
+  position: relative;
+  isolation: isolate;
+
+  display: grid;
+  place-items: center;
+
+  flex: 1;
+
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  background: #11120f;
+}
+
+.gallery-video-thumbnail {
+  position: absolute;
+  inset: 0;
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: contain;
+  object-position: center;
+
+  user-select: none;
+  -webkit-user-drag: none;
+
+  transition:
+    opacity .35s var(--ease),
+    transform .5s var(--ease);
+}
+
+.gallery-video-preview::after {
+  content: "";
+
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+
+  background: rgba(0, 0, 0, .12);
+
+  pointer-events: none;
+
+  transition:
+    background .35s var(--ease);
+}
+
+
+/* =========================================
+   04. VIDEO PLAY BUTTON
+========================================= */
+
+.gallery-video-play {
+  position: relative;
+  z-index: 2;
+
+  display: grid;
+  place-items: center;
+
+  width: 76px;
+  height: 76px;
+
+  padding: 0 0 0 4px;
+
+  border: 1px solid rgba(255,255,255,.3);
+  border-radius: 50%;
+
+  background: var(--accent);
+  color: var(--ink-dark);
+
+  font-size: 27px;
+  line-height: 1;
+
+  box-shadow:
+    0 8px 32px rgba(0,0,0,.3);
+
+  cursor: pointer;
+
+  transition:
+    transform .35s var(--ease),
+    background .3s var(--ease),
+    box-shadow .35s var(--ease);
+}
+
+.gallery-video-play:focus-visible {
+  outline: 3px solid var(--white);
+  outline-offset: 5px;
+}
+
+.gallery-video-play:active {
+  transform: scale(.92);
+}
+
+@media (hover: hover) and (pointer: fine) {
+
+  .gallery-video-preview:hover
+  .gallery-video-thumbnail {
+    transform: scale(1.025);
+  }
+
+  .gallery-video-preview:hover::after {
+    background: rgba(0,0,0,.22);
+  }
+
+  .gallery-video-play:hover {
+    transform: scale(1.1);
+
+    background: var(--white);
+
+    box-shadow:
+      0 12px 40px rgba(0,0,0,.4);
+  }
+
+}
+
+
+/* =========================================
+   05. VIDEO PLATFORM LABEL
+========================================= */
+
+.gallery-video-platform {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 2;
+
+  display: inline-flex;
+  align-items: center;
+
+  padding: 6px 12px;
+
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 999px;
+
+  background: rgba(25,26,23,.88);
+  color: var(--white);
+
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .025em;
+  line-height: 1.5;
+
+  pointer-events: none;
+}
+
+
+/* =========================================
+   06. VIDEO PLAYER
+========================================= */
+
+.gallery-video-player {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex: 1;
+
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+
+  background: #000;
+
+  animation:
+    galleryVideoReveal .3s var(--ease) both;
+}
+
+.gallery-video-iframe,
+.gallery-video-element {
+  display: block;
+
+  width: 100%;
+  height: 100%;
+
+  min-width: 0;
+  min-height: 0;
+  max-width: 100%;
+  max-height: 100%;
+
+  border: 0;
+
+  background: #000;
+}
+
+.gallery-video-element {
+  object-fit: contain;
+  object-position: center;
+}
+
+
+/* =========================================
+   07. PORTRAIT VIDEO PLATFORMS
+========================================= */
+
+.gallery-video-wrapper[data-platform="tiktok"]
+.gallery-video-player,
+
+.gallery-video-wrapper[data-platform="instagram"]
+.gallery-video-player {
+  container-type: size;
+}
+
+.gallery-video-wrapper[data-platform="tiktok"]
+.gallery-video-iframe,
+
+.gallery-video-wrapper[data-platform="instagram"]
+.gallery-video-iframe {
+  width: auto;
+  height: 100%;
+
+  aspect-ratio: 9 / 16;
+
+  max-width: 100%;
+  max-height: 100%;
+}
+
+@supports (width: 1cqh) {
+
+  .gallery-video-wrapper[data-platform="tiktok"]
+  .gallery-video-iframe,
+
+  .gallery-video-wrapper[data-platform="instagram"]
+  .gallery-video-iframe {
+    width: min(100%, 56.25cqh);
+    height: auto;
+    aspect-ratio: 9 / 16;
+  }
+
+}
+
+
+/* =========================================
+   08. LANDSCAPE VIDEO PLATFORMS
+========================================= */
+
+.gallery-video-wrapper[data-platform="youtube"]
+.gallery-video-player,
+
+.gallery-video-wrapper[data-platform="vimeo"]
+.gallery-video-player {
+  container-type: size;
+}
+
+.gallery-video-wrapper[data-platform="youtube"]
+.gallery-video-iframe,
+
+.gallery-video-wrapper[data-platform="vimeo"]
+.gallery-video-iframe {
+  width: 100%;
+  height: auto;
+
+  aspect-ratio: 16 / 9;
+
+  max-width: 100%;
+  max-height: 100%;
+}
+
+@supports (width: 1cqh) {
+
+  .gallery-video-wrapper[data-platform="youtube"]
+  .gallery-video-iframe,
+
+  .gallery-video-wrapper[data-platform="vimeo"]
+  .gallery-video-iframe {
+    width: min(100%, 177.7778cqh);
+    height: auto;
+    aspect-ratio: 16 / 9;
+  }
+
+}
+
+
+/* =========================================
+   09. ORIGINAL VIDEO LINK
+========================================= */
+
+.gallery-video-original {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  min-height: 38px;
+  max-width: 100%;
+
+  padding: 8px 16px;
+
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 999px;
+
+  background: rgba(255,255,255,.06);
+  color: var(--white);
+
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+
+  text-align: center;
+  overflow-wrap: anywhere;
+
+  transition:
+    background .25s var(--ease),
+    color .25s var(--ease),
+    border-color .25s var(--ease);
+}
+
+.gallery-video-original:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--ink-dark);
+}
+
+.gallery-video-original:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+
+/* =========================================
+   10. VIDEO ERROR STATE
+========================================= */
+
+.gallery-video-error {
+  max-width: 320px;
+
+  padding: 24px;
+
+  color: rgba(255,255,255,.85);
+
+  font-size: 13px;
+  line-height: 1.7;
+  text-align: center;
+}
+
+
+/* =========================================
+   11. VIDEO THUMBNAIL INDICATOR
+========================================= */
+
+.gallery-thumbnail.is-video {
+  isolation: isolate;
+}
+
+.gallery-thumbnail.is-video
+.gallery-thumbnail-image {
+  background: #191a17;
+}
+
+.gallery-thumbnail-play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 1;
+
+  display: grid;
+  place-items: center;
+
+  width: 28px;
+  height: 28px;
+
+  padding-left: 2px;
+
+  border: 1px solid rgba(255,255,255,.3);
+  border-radius: 50%;
+
+  background: rgba(25,26,23,.88);
+  color: var(--white);
+
+  font-size: 11px;
+  line-height: 1;
+
+  transform: translate(-50%, -50%);
+
+  pointer-events: none;
+
+  transition:
+    background .25s var(--ease),
+    transform .25s var(--ease);
+}
+
+.gallery-thumbnail.is-video.is-active
+.gallery-thumbnail-play {
+  background: var(--accent);
+  color: var(--ink-dark);
+}
+
+@media (hover: hover) and (pointer: fine) {
+
+  .gallery-thumbnail.is-video:hover
+  .gallery-thumbnail-play {
+    transform:
+      translate(-50%, -50%) scale(1.1);
+  }
+
+}
+
+
+/* =========================================
+   12. HIDDEN STATE PROTECTION
+========================================= */
+
+.gallery-video-preview[hidden],
+.gallery-video-player[hidden] {
+  display: none !important;
+}
+
+
+/* =========================================
+   13. RESPONSIVE — TABLET
+========================================= */
+
+@media (max-width: 900px) {
+
+  .gallery-stage.is-video {
+    height: clamp(280px, 58vh, 620px);
+    height: clamp(280px, 58dvh, 620px);
+  }
+
+  .gallery-video-play {
+    width: 68px;
+    height: 68px;
+
+    font-size: 24px;
+  }
+
+}
+
+
+/* =========================================
+   14. RESPONSIVE — MOBILE
+========================================= */
+
+@media (max-width: 640px) {
+
+  .gallery-stage.is-video {
+    height: clamp(280px, 58vh, 540px);
+    height: clamp(280px, 58dvh, 540px);
+
+    border-radius: 10px;
+  }
+
+  .gallery-image-frame.is-video {
+    padding: 8px 8px 60px;
+  }
+
+  .gallery-stage.is-video .gallery-nav {
+    top: auto;
+    bottom: 8px;
+
+    transform: none;
+  }
+
+  .gallery-stage.is-video .gallery-prev {
+    left: 8px;
+  }
+
+  .gallery-stage.is-video .gallery-next {
+    right: 8px;
+  }
+
+  .gallery-stage.is-video .gallery-nav:active {
+    transform: scale(.92);
+  }
+
+  .gallery-video-wrapper {
+    gap: 8px;
+  }
+
+  .gallery-video-play {
+    width: 60px;
+    height: 60px;
+
+    font-size: 21px;
+  }
+
+  .gallery-video-platform {
+    top: 8px;
+    left: 8px;
+
+    padding: 5px 10px;
+
+    font-size: 10px;
+  }
+
+  .gallery-video-original {
+    min-height: 44px;
+
+    padding: 8px 12px;
+
+    font-size: 11px;
+  }
+
+  .gallery-thumbnail-play {
+    width: 24px;
+    height: 24px;
+
+    font-size: 10px;
+  }
+
+}
+
+
+/* =========================================
+   15. REDUCED MOTION
+========================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+  .gallery-video-wrapper,
+  .gallery-video-preview,
+  .gallery-video-preview::after,
+  .gallery-video-thumbnail,
+  .gallery-video-player,
+  .gallery-video-play,
+  .gallery-video-original,
+  .gallery-thumbnail-play {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .gallery-video-thumbnail,
+  .gallery-video-play {
+    transform: none !important;
+  }
+
+  .gallery-thumbnail-play {
+    transform:
+      translate(-50%, -50%) !important;
+  }
+
+}
+
+
+/* ==================================================
+   END MULTIMEDIA GALLERY & VIDEO PLAYER
+================================================== */
