@@ -2379,3 +2379,411 @@ textarea[aria-invalid="true"] {
 /* =========================================
    END MULTILINGUAL CMS
 ========================================= */
+
+/* =========================================
+   25. PROJECT GALLERY CMS — V2.2
+========================================= */
+
+.project-gallery-editor {
+  min-width: 0;
+
+  margin-top: 24px;
+  padding: 22px;
+
+  background: var(--surface-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+
+/* Gallery header */
+
+.gallery-editor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+
+  margin-bottom: 18px;
+}
+
+.gallery-editor-heading {
+  flex: 1;
+  min-width: 0;
+}
+
+.gallery-editor-heading h3 {
+  color: var(--text);
+
+  font-size: 16px;
+  font-weight: 750;
+  letter-spacing: -.025em;
+}
+
+.gallery-editor-description {
+  margin-top: 5px;
+
+  color: var(--muted);
+
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.gallery-editor-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  padding: 7px 12px;
+
+  background: var(--orange-soft);
+  color: #b53e19;
+
+  border: 1px solid rgba(240, 100, 53, .18);
+  border-radius: 999px;
+
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+
+  white-space: nowrap;
+}
+
+
+/* Upload button */
+
+.gallery-upload-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  width: 100%;
+  min-height: 76px;
+
+  padding: 18px;
+
+  background: var(--surface);
+  color: var(--muted);
+
+  border: 1px dashed #cbd0c7;
+  border-radius: var(--radius);
+
+  font-size: 13px;
+  font-weight: 650;
+
+  cursor: pointer;
+
+  transition:
+    background .25s ease,
+    border-color .25s ease,
+    color .25s ease,
+    transform .25s ease;
+}
+
+.gallery-upload-button:hover:not(:disabled) {
+  background: var(--orange-soft);
+  color: #b53e19;
+
+  border-color: var(--orange);
+}
+
+.gallery-upload-button:active:not(:disabled) {
+  transform: scale(.995);
+}
+
+.gallery-upload-button:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+.gallery-upload-note {
+  margin-top: 9px;
+
+  color: var(--muted);
+
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+
+/* Gallery list */
+
+.gallery-editor-list {
+  display: grid;
+  gap: 14px;
+
+  margin-top: 20px;
+}
+
+.gallery-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 90px;
+  padding: 20px;
+
+  background: var(--surface);
+  color: var(--muted);
+
+  border: 1px dashed var(--line);
+  border-radius: var(--radius-sm);
+
+  font-size: 12px;
+  text-align: center;
+}
+
+
+/* Gallery item */
+
+.gallery-editor-item {
+  min-width: 0;
+
+  padding: 18px;
+
+  background: var(--surface);
+
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+
+  box-shadow: var(--shadow);
+
+  transition:
+    border-color .25s ease,
+    box-shadow .25s ease;
+}
+
+.gallery-editor-item:focus-within {
+  border-color: rgba(240, 100, 53, .35);
+}
+
+.gallery-item-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+
+  margin-bottom: 16px;
+  padding-bottom: 14px;
+
+  border-bottom: 1px solid var(--line);
+}
+
+.gallery-item-title {
+  color: var(--text);
+
+  font-size: 13px;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+}
+
+.gallery-item-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.gallery-item-actions .icon-button {
+  transition:
+    background .2s ease,
+    border-color .2s ease,
+    color .2s ease;
+}
+
+.gallery-item-actions .icon-button:hover:not(:disabled) {
+  background: var(--orange-soft);
+  border-color: rgba(240, 100, 53, .25);
+  color: #b53e19;
+}
+
+
+/* Image and caption layout */
+
+.gallery-item-body {
+  display: grid;
+  grid-template-columns:
+    minmax(0, .9fr)
+    minmax(0, 1.1fr);
+
+  align-items: start;
+  gap: 20px;
+}
+
+.gallery-item-body > * {
+  min-width: 0;
+}
+
+.gallery-item-body .media-panel {
+  padding: 12px;
+}
+
+.gallery-item-body .media-preview,
+.gallery-item-body .image-preview {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+
+  background: #eceee9;
+}
+
+.gallery-item-body .media-preview img,
+.gallery-item-body .image-preview img {
+  width: 100%;
+  height: 100%;
+
+  padding: 6px;
+
+  object-fit: contain;
+  object-position: center;
+}
+
+.gallery-item-body .media-actions {
+  gap: 6px;
+}
+
+.gallery-item-body .media-url {
+  overflow-wrap: anywhere;
+}
+
+
+/* Bilingual caption fields */
+
+.gallery-item-fields {
+  min-width: 0;
+}
+
+.gallery-item-fields .field:last-child {
+  margin-bottom: 0;
+}
+
+.gallery-item-fields textarea {
+  min-height: 140px;
+}
+
+.gallery-item-fields .field-hint,
+.gallery-item-fields .field-help {
+  overflow-wrap: anywhere;
+}
+
+
+/* Upload feedback */
+
+.project-gallery-editor .status {
+  margin-top: 14px;
+}
+
+.project-gallery-editor .progress-track {
+  margin-top: 14px;
+  height: 5px;
+}
+
+
+/* Responsive — Tablet */
+
+@media (max-width: 900px) {
+
+  .project-gallery-editor {
+    padding: 18px;
+  }
+
+  .gallery-item-body {
+    gap: 16px;
+  }
+
+}
+
+
+/* Responsive — Mobile */
+
+@media (max-width: 600px) {
+
+  .project-gallery-editor {
+    margin-top: 20px;
+    padding: 12px;
+  }
+
+  .gallery-editor-header {
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .gallery-editor-heading h3 {
+    font-size: 15px;
+  }
+
+  .gallery-editor-count {
+    padding: 6px 9px;
+    font-size: 10px;
+  }
+
+  .gallery-upload-button {
+    min-height: 68px;
+    padding: 14px;
+  }
+
+  .gallery-editor-list {
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .gallery-editor-item {
+    padding: 12px;
+  }
+
+  .gallery-item-header {
+    gap: 8px;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+  }
+
+  .gallery-item-body {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .gallery-item-actions .icon-button {
+    width: 44px;
+    height: 44px;
+  }
+
+  .gallery-item-actions .btn {
+    min-height: 44px;
+  }
+
+  .gallery-item-body .media-panel {
+    padding: 10px;
+  }
+
+  .gallery-item-body .media-actions .btn {
+    min-height: 44px;
+    white-space: normal;
+  }
+
+  .gallery-item-fields textarea {
+    min-height: 120px;
+  }
+
+}
+
+
+/* Reduced motion */
+
+@media (prefers-reduced-motion: reduce) {
+
+  .gallery-upload-button,
+  .gallery-editor-item,
+  .gallery-item-actions .icon-button {
+    transition: none !important;
+    transform: none !important;
+  }
+
+}
+
+/* =========================================
+   END PROJECT GALLERY CMS
+========================================= */
