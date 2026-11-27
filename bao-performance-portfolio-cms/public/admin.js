@@ -24,6 +24,17 @@ const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 const MAX_PDF_SIZE = 10 * 1024 * 1024;
 const MAX_PROJECT_GALLERY = 20;
 
+
+const VIDEO_PLATFORMS = {
+  tiktok: "TikTok",
+  youtube: "YouTube",
+  facebook: "Facebook",
+  instagram: "Instagram",
+  vimeo: "Vimeo",
+  mp4: "Direct MP4"
+};
+
+
 const IMAGE_TYPES = [
   "image/jpeg",
   "image/png",
@@ -291,45 +302,65 @@ function normalizeContent(data = {}) {
       : [];
   }
 
-    // Project Gallery - V2.2
+    
+// Project Gallery - V2.3
 
-  result.projects = result.projects.map(project => {
-    const ids = new Set();
+result.projects = result.projects.map(project => {
 
-    const gallery = Array.isArray(project.gallery)
-      ? project.gallery
-      : [];
+  const ids = new Set();
 
-    return {
-      ...project,
+  const gallery = Array.isArray(project.gallery)
+    ? project.gallery
+    : [];
 
-      gallery: gallery
-        .filter(item =>
-          item &&
-          typeof item === "object" &&
-          !Array.isArray(item)
-        )
-        .map(item => {
+  return {
+    ...project,
 
-          let id = item.id || uid();
+    gallery: gallery
+      .filter(item =>
+        item &&
+        typeof item === "object" &&
+        !Array.isArray(item)
+      )
+      .map(item => {
 
-          if (ids.has(id)) {
-            id = uid();
-          }
+        let id = item.id || uid();
 
-          ids.add(id);
+        if (ids.has(id)) {
+          id = uid();
+        }
 
-          return {
-            id,
-            image: item.image || "",
-            title: item.title || "",
-            description: item.description || ""
-          };
+        ids.add(id);
 
-        })
-    };
-  });
-   
+        const type = item.type === "video"
+          ? "video"
+          : "image";
+
+        const record = {
+          id,
+          type,
+          image: item.image || "",
+          title: item.title || "",
+          description: item.description || ""
+        };
+
+        if (type === "video") {
+
+          record.platform =
+            item.platform || "tiktok";
+
+          record.videoUrl =
+            item.videoUrl || "";
+
+        }
+
+        return record;
+
+      })
+  };
+
+});
+
   for (const key of ["competencies", "tools"]) {
     result[key] = result[key].map(group => ({
       ...group,
@@ -2198,7 +2229,7 @@ function addButton(label, handler) {
 
 
 /* =========================================
-   16A. PROJECT GALLERY EDITOR — V2.2
+   16A. PROJECT GALLERY EDITOR — V2.3
 ========================================= */
 
 function getGalleryTranslation(
@@ -2324,7 +2355,7 @@ function renderProjectGallery(project) {
     el(
       "p",
       "gallery-editor-description",
-      "Manage project evidence and visuals."
+      "Manage project images, videos and evidence."
     )
   );
 
@@ -2350,10 +2381,9 @@ function renderProjectGallery(project) {
 
       if (gallery.length >= MAX_PROJECT_GALLERY) {
         toast(
-          "Gallery đã đạt giới hạn 20 ảnh.",
+          "Gallery đã đạt giới hạn 20 media.",
           "warning"
         );
-
         return;
       }
 
@@ -2362,10 +2392,58 @@ function renderProjectGallery(project) {
     }
   );
 
+  const addVideoButton = button(
+    "＋ Add video",
+    "gallery-upload-button gallery-add-video-button",
+    () => {
+
+      if (isBusy()) return;
+
+      if (gallery.length >= MAX_PROJECT_GALLERY) {
+        toast(
+          "Gallery đã đạt giới hạn 20 media.",
+          "warning"
+        );
+        return;
+      }
+
+      gallery.push({
+        id: uid(),
+        type: "video",
+        platform: "tiktok",
+        videoUrl: "",
+        image: "",
+        title: "",
+        description: ""
+      });
+
+      markDirty();
+
+      renderGalleryItems();
+
+      list.lastElementChild?.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest"
+      });
+
+    }
+  );
+
+  const uploadActions = el(
+    "div",
+    "gallery-upload-actions"
+  );
+
+  uploadActions.append(
+    uploadButton,
+    addVideoButton
+  );
+
   const uploadNote = el(
     "p",
     "gallery-upload-note",
-    "JPG, PNG, WebP, GIF · Max 5 MB/image"
+    "Images: JPG, PNG, WebP, GIF · Max 5 MB/image. " +
+    "Videos: External URL + uploaded thumbnail."
   );
 
   const status = el(
@@ -2387,8 +2465,7 @@ function renderProjectGallery(project) {
     "gallery-editor-list"
   );
 
-
-  function moveImage(index, direction) {
+  function moveMedia(index, direction) {
 
     if (isBusy()) return;
 
@@ -2409,13 +2486,12 @@ function renderProjectGallery(project) {
 
   }
 
-
-  function removeImage(index) {
+  function removeMedia(index) {
 
     if (isBusy()) return;
 
     if (!confirm(
-      "Bạn muốn gỡ ảnh này khỏi Gallery?"
+      "Bạn muốn gỡ media này khỏi Gallery?"
     )) {
       return;
     }
@@ -2445,19 +2521,75 @@ function renderProjectGallery(project) {
     renderGalleryItems();
 
     toast(
-      "Đã gỡ ảnh. Nhấn Save changes để lưu."
+      "Đã gỡ media. Nhấn Save changes để lưu."
     );
 
   }
 
+  function renderPlatformField(item) {
+
+    const wrap = el(
+      "div",
+      "field gallery-platform-field"
+    );
+
+    const id = `platform-${uid()}`;
+
+    const label = el(
+      "label",
+      "",
+      "Video platform · Shared"
+    );
+
+    label.htmlFor = id;
+
+    const select = el("select");
+
+    select.id = id;
+
+    for (const [value, name] of
+      Object.entries(VIDEO_PLATFORMS)) {
+
+      const option = el(
+        "option",
+        "",
+        name
+      );
+
+      option.value = value;
+
+      select.append(option);
+
+    }
+
+    select.value = item.platform || "tiktok";
+
+    select.addEventListener("change", () => {
+
+      if (isBusy()) return;
+
+      item.platform = select.value;
+
+      markDirty();
+
+    });
+
+    wrap.append(label, select);
+
+    return wrap;
+
+  }
 
   function renderGalleryItems() {
 
     count.textContent =
-      `${gallery.length}/${MAX_PROJECT_GALLERY} images`;
+      `${gallery.length}/${MAX_PROJECT_GALLERY} media`;
 
-    uploadButton.disabled =
+    const isFull =
       gallery.length >= MAX_PROJECT_GALLERY;
+
+    uploadButton.disabled = isFull;
+    addVideoButton.disabled = isFull;
 
     list.replaceChildren();
 
@@ -2467,7 +2599,7 @@ function renderProjectGallery(project) {
         el(
           "div",
           "gallery-empty",
-          "No gallery images yet."
+          "No gallery media yet."
         )
       );
 
@@ -2477,9 +2609,12 @@ function renderProjectGallery(project) {
 
     gallery.forEach((item, index) => {
 
+      const isVideo = item.type === "video";
+
       const node = el(
         "div",
-        "gallery-editor-item"
+        "gallery-editor-item" +
+        (isVideo ? " is-video" : " is-image")
       );
 
       const itemHeader = el(
@@ -2490,7 +2625,8 @@ function renderProjectGallery(project) {
       const itemTitle = el(
         "strong",
         "gallery-item-title",
-        `Image ${String(index + 1).padStart(2, "0")}`
+        `${isVideo ? "Video" : "Image"} ` +
+        String(index + 1).padStart(2, "0")
       );
 
       const actions = el(
@@ -2501,35 +2637,37 @@ function renderProjectGallery(project) {
       const up = button(
         "↑",
         "icon-button",
-        () => moveImage(index, -1)
+        () => moveMedia(index, -1)
       );
 
       up.disabled = index === 0;
-      up.title = "Move image up";
+      up.title = "Move media up";
+
       up.setAttribute(
         "aria-label",
-        "Move image up"
+        "Move media up"
       );
 
       const down = button(
         "↓",
         "icon-button",
-        () => moveImage(index, 1)
+        () => moveMedia(index, 1)
       );
 
       down.disabled =
         index === gallery.length - 1;
 
-      down.title = "Move image down";
+      down.title = "Move media down";
+
       down.setAttribute(
         "aria-label",
-        "Move image down"
+        "Move media down"
       );
 
       const remove = button(
         "Remove",
         "btn btn-danger btn-sm",
-        () => removeImage(index)
+        () => removeMedia(index)
       );
 
       actions.append(up, down, remove);
@@ -2545,19 +2683,17 @@ function renderProjectGallery(project) {
         item,
         "image",
         {
-          title: "Gallery Image"
+          title: isVideo
+            ? "Video Thumbnail · Shared"
+            : "Gallery Image · Shared"
         }
       );
 
-      // Gallery images must always have a file.
-      // Remove the entire item instead of clearing
-      // its image URL.
-
-      const removeMedia =
+      const removeFile =
         media.querySelector(".btn-danger");
 
-      if (removeMedia) {
-        removeMedia.remove();
+      if (removeFile) {
+        removeFile.remove();
       }
 
       const fields = el(
@@ -2565,12 +2701,50 @@ function renderProjectGallery(project) {
         "gallery-item-fields"
       );
 
+      if (isVideo) {
+
+        fields.append(
+
+          renderPlatformField(item),
+
+          field(
+            "Video URL · Shared",
+            item.videoUrl || "",
+            value => {
+              item.videoUrl = value;
+            },
+            {
+              type: "url",
+              max: 2000,
+              placeholder: "https://",
+              hint:
+                "Use a public video URL matching " +
+                "the selected platform."
+            }
+          )
+
+        );
+
+        fields.append(
+          el(
+            "div",
+            "gallery-video-note",
+            "Upload a thumbnail for this video. " +
+            "The video itself is hosted externally."
+          )
+        );
+
+      }
+
       fields.append(
+
         galleryField(
           project,
           item,
           "title",
-          "Image title",
+          isVideo
+            ? "Video title"
+            : "Image title",
           {
             max: 180
           }
@@ -2580,12 +2754,15 @@ function renderProjectGallery(project) {
           project,
           item,
           "description",
-          "Image description",
+          isVideo
+            ? "Video description"
+            : "Image description",
           {
             max: 1000,
             multiline: true
           }
         )
+
       );
 
       body.append(media, fields);
@@ -2597,7 +2774,6 @@ function renderProjectGallery(project) {
     });
 
   }
-
 
   input.addEventListener(
     "change",
@@ -2655,6 +2831,7 @@ function renderProjectGallery(project) {
 
             gallery.push({
               id: uid(),
+              type: "image",
               image: url,
               title: "",
               description: ""
@@ -2720,11 +2897,10 @@ function renderProjectGallery(project) {
     }
   );
 
-
   panel.append(
     header,
     input,
-    uploadButton,
+    uploadActions,
     uploadNote,
     progress,
     status,
@@ -2736,6 +2912,8 @@ function renderProjectGallery(project) {
   return panel;
 
 }
+
+
 
 /* =========================================
    END PROJECT GALLERY EDITOR
@@ -3715,6 +3893,128 @@ function validateURL(value, label) {
   }
 }
 
+   
+function validateVideoURL(value, platform, label) {
+
+  let url;
+
+  try {
+
+    url = new URL((value || "").trim());
+
+  } catch {
+
+    throw new Error(
+      `${label}: URL video không hợp lệ.`
+    );
+
+  }
+
+  if (
+    url.protocol !== "https:" ||
+    url.username ||
+    url.password ||
+    url.port
+  ) {
+
+    throw new Error(
+      `${label}: URL video phải sử dụng HTTPS hợp lệ.`
+    );
+
+  }
+
+  const host = url.hostname.toLowerCase();
+  const path = url.pathname;
+
+  let valid = false;
+
+  switch (platform) {
+
+    case "tiktok":
+
+      valid =
+        ["www.tiktok.com", "tiktok.com"]
+          .includes(host) &&
+        /^\/@[^/]+\/video\/\d+\/?$/.test(path);
+
+      break;
+
+    case "youtube":
+
+      valid =
+        (
+          [
+            "www.youtube.com",
+            "youtube.com",
+            "m.youtube.com"
+          ].includes(host) &&
+          (
+            (
+              path === "/watch" &&
+              /^[a-zA-Z0-9_-]{11}$/.test(
+                url.searchParams.get("v") || ""
+              )
+            ) ||
+            /^\/shorts\/[a-zA-Z0-9_-]{11}\/?$/
+              .test(path)
+          )
+        ) ||
+        (
+          host === "youtu.be" &&
+          /^\/[a-zA-Z0-9_-]{11}\/?$/.test(path)
+        );
+
+      break;
+
+    case "facebook":
+
+      valid = [
+        "facebook.com",
+        "www.facebook.com",
+        "m.facebook.com",
+        "fb.watch"
+      ].includes(host) && path !== "/";
+
+      break;
+
+    case "instagram":
+
+      valid =
+        ["instagram.com", "www.instagram.com"]
+          .includes(host) &&
+        /^\/(reel|p|tv)\/[a-zA-Z0-9_-]+\/?$/
+          .test(path);
+
+      break;
+
+    case "vimeo":
+
+      valid =
+        ["vimeo.com", "www.vimeo.com"]
+          .includes(host) &&
+        /^\/\d+\/?$/.test(path);
+
+      break;
+
+    case "mp4":
+
+      valid = /\.mp4$/i.test(path);
+
+      break;
+
+  }
+
+  if (!valid) {
+
+    throw new Error(
+      `${label}: URL không phù hợp với nền tảng video.`
+    );
+
+  }
+
+}
+
+
 function validateContent(data) {
   if (!data.name.trim()) {
     throw new Error(
@@ -3770,56 +4070,109 @@ function validateContent(data) {
       );
     }
 
-         // Project Gallery validation - V2.2
+
+// Project Gallery validation - V2.3
+
+if (
+  !Array.isArray(project.gallery) ||
+  project.gallery.length > MAX_PROJECT_GALLERY
+) {
+
+  throw new Error(
+    `Project ${index + 1}: Gallery không hợp lệ.`
+  );
+
+}
+
+const galleryIds = new Set();
+
+project.gallery.forEach((item, mediaIndex) => {
+
+  const label =
+    `Project ${index + 1} - Media ${mediaIndex + 1}`;
+
+  if (!item.id || galleryIds.has(item.id)) {
+
+    throw new Error(
+      `${label}: ID media không hợp lệ.`
+    );
+
+  }
+
+  galleryIds.add(item.id);
+
+  const type = item.type || "image";
+
+  if (!["image", "video"].includes(type)) {
+
+    throw new Error(
+      `${label}: Loại media không hợp lệ.`
+    );
+
+  }
+
+  if (!validMediaUrl(item.image)) {
+
+    throw new Error(
+      type === "video"
+        ? `${label}: Video chưa có thumbnail hợp lệ.`
+        : `${label}: Đường dẫn ảnh không hợp lệ.`
+    );
+
+  }
+
+  if (type === "video") {
 
     if (
-      !Array.isArray(project.gallery) ||
-      project.gallery.length > MAX_PROJECT_GALLERY
+      !Object.hasOwn(
+        VIDEO_PLATFORMS,
+        item.platform
+      )
     ) {
+
       throw new Error(
-        `Project ${index + 1}: Gallery không hợp lệ.`
+        `${label}: Nền tảng video không hợp lệ.`
       );
+
     }
 
-    const galleryIds = new Set();
+    if (
+      !item.videoUrl ||
+      item.videoUrl.length > 2000
+    ) {
 
-    project.gallery.forEach((item, imageIndex) => {
+      throw new Error(
+        `${label}: URL video không hợp lệ.`
+      );
 
-      const label =
-        `Project ${index + 1} - Image ${imageIndex + 1}`;
+    }
 
-      if (!item.id || galleryIds.has(item.id)) {
-        throw new Error(
-          `${label}: ID ảnh không hợp lệ.`
-        );
-      }
-
-      galleryIds.add(item.id);
-
-      if (!validMediaUrl(item.image)) {
-        throw new Error(
-          `${label}: Đường dẫn ảnh không hợp lệ.`
-        );
-      }
-
-      if ((item.title || "").length > 180) {
-        throw new Error(
-          `${label}: Tiêu đề vượt quá 180 ký tự.`
-        );
-      }
-
-      if ((item.description || "").length > 1000) {
-        throw new Error(
-          `${label}: Mô tả vượt quá 1000 ký tự.`
-        );
-      }
-
-    });
-     
-    validateURL(
-      project.link,
-      `Project ${index + 1}`
+    validateVideoURL(
+      item.videoUrl,
+      item.platform,
+      label
     );
+
+  }
+
+  if ((item.title || "").length > 180) {
+
+    throw new Error(
+      `${label}: Tiêu đề vượt quá 180 ký tự.`
+    );
+
+  }
+
+  if ((item.description || "").length > 1000) {
+
+    throw new Error(
+      `${label}: Mô tả vượt quá 1000 ký tự.`
+    );
+
+  }
+
+});
+
   });
 
   for (const [key, fieldName, label] of [
