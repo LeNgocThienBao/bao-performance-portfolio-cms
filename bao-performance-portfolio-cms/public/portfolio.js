@@ -601,7 +601,670 @@
     }
 
   }
+// ==================================================
+// PORTFOLIO V2.2 - PROJECT GALLERY ENGINE
+// ==================================================
 
+let activeGallery = null;
+
+function galleryLabel(key) {
+
+  const labels = {
+    viewGallery: ["View gallery", "Xem bộ ảnh"],
+    close: ["Close gallery", "Đóng bộ ảnh"],
+    previous: ["Previous image", "Ảnh trước"],
+    next: ["Next image", "Ảnh tiếp theo"],
+    image: ["Image", "Ảnh"],
+    images: ["images", "ảnh"],
+    thumbnails: ["Gallery thumbnails", "Danh sách ảnh"],
+    loading: ["Loading image...", "Đang tải ảnh..."],
+    error: ["Unable to load image.", "Không thể tải ảnh."],
+    gallery: ["Project gallery", "Bộ ảnh dự án"]
+  };
+
+  return window.PORTFOLIO_TRANSLATIONS
+    ?.[currentLanguage]?.gallery?.[key]
+    || labels[key]?.[currentLanguage === "vi" ? 1 : 0]
+    || key;
+
+}
+
+function getProjectGallery(project) {
+
+  return array(project.gallery)
+    .filter(item => validImage(item.image))
+    .slice(0, 20);
+
+}
+
+function createGalleryButton(
+  symbol,
+  label,
+  className,
+  handler
+) {
+
+  const button = create(
+    "button",
+    className,
+    symbol
+  );
+
+  button.type = "button";
+  button.setAttribute("aria-label", label);
+  button.title = label;
+
+  button.addEventListener("click", handler);
+
+  return button;
+
+}
+
+function closeProjectGallery(immediate = false) {
+
+  const gallery = activeGallery;
+
+  if (!gallery || gallery.closing) return;
+
+  gallery.closing = true;
+
+  const finish = () => {
+
+    gallery.dialog.close();
+    gallery.dialog.remove();
+
+    document.body.style.overflow =
+      gallery.previousOverflow;
+
+    activeGallery = null;
+
+    if (gallery.trigger?.isConnected) {
+
+      gallery.trigger.focus({
+        preventScroll: true
+      });
+
+    }
+
+  };
+
+  gallery.dialog.classList.remove("is-open");
+  gallery.dialog.classList.add("is-closing");
+
+  if (immediate || reducedMotion.matches) {
+
+    finish();
+
+  } else {
+
+    window.setTimeout(finish, 280);
+
+  }
+
+}
+
+function openProjectGallery(project, trigger) {
+
+  if (activeGallery) return;
+
+  const items = getProjectGallery(project);
+
+  if (!items.length) return;
+
+  let currentIndex = 0;
+  let imageRequest = 0;
+  let pointerStart = null;
+
+  const dialog = create(
+    "dialog",
+    "gallery-lightbox"
+  );
+
+  dialog.setAttribute(
+    "aria-labelledby",
+    "galleryProjectTitle"
+  );
+
+  const panel = create(
+    "div",
+    "gallery-panel"
+  );
+
+  // Header
+
+  const header = create(
+    "div",
+    "gallery-header"
+  );
+
+  const heading = create(
+    "div",
+    "gallery-heading"
+  );
+
+  heading.appendChild(
+    create(
+      "span",
+      "gallery-eyebrow",
+      galleryLabel("gallery")
+    )
+  );
+
+  const projectTitle = create(
+    "h2",
+    "gallery-project-title",
+    text(project.title, galleryLabel("gallery"))
+  );
+
+  projectTitle.id = "galleryProjectTitle";
+
+  heading.appendChild(projectTitle);
+
+  const closeButton = createGalleryButton(
+    "×",
+    galleryLabel("close"),
+    "gallery-close",
+    () => closeProjectGallery()
+  );
+
+  header.append(heading, closeButton);
+
+  // Main image
+
+  const stage = create(
+    "div",
+    "gallery-stage"
+  );
+
+  const imageFrame = create(
+    "div",
+    "gallery-image-frame"
+  );
+
+  const imageStatus = create(
+    "div",
+    "gallery-image-status"
+  );
+
+  imageStatus.setAttribute(
+    "role",
+    "status"
+  );
+
+  imageFrame.appendChild(imageStatus);
+
+  const previousButton = createGalleryButton(
+    "‹",
+    galleryLabel("previous"),
+    "gallery-nav gallery-prev",
+    () => showImage(currentIndex - 1)
+  );
+
+  const nextButton = createGalleryButton(
+    "›",
+    galleryLabel("next"),
+    "gallery-nav gallery-next",
+    () => showImage(currentIndex + 1)
+  );
+
+  stage.append(
+    imageFrame,
+    previousButton,
+    nextButton
+  );
+
+  // Caption
+
+  const caption = create(
+    "div",
+    "gallery-caption"
+  );
+
+  const captionContent = create(
+    "div",
+    "gallery-caption-content"
+  );
+
+  const captionTitle = create(
+    "h3",
+    "gallery-caption-title"
+  );
+
+  const captionDescription = create(
+    "p",
+    "gallery-caption-description"
+  );
+
+  captionContent.append(
+    captionTitle,
+    captionDescription
+  );
+
+  const counter = create(
+    "span",
+    "gallery-counter"
+  );
+
+  counter.setAttribute(
+    "aria-live",
+    "polite"
+  );
+
+  caption.append(
+    captionContent,
+    counter
+  );
+
+  // Thumbnail strip
+
+  const thumbnails = create(
+    "div",
+    "gallery-thumbnails"
+  );
+
+  thumbnails.setAttribute("role", "group");
+
+  thumbnails.setAttribute(
+    "aria-label",
+    galleryLabel("thumbnails")
+  );
+
+  const thumbnailButtons = items.map(
+    (item, index) => {
+
+      const button = createGalleryButton(
+        "",
+        `${galleryLabel("image")} ${index + 1}`,
+        "gallery-thumbnail",
+        () => showImage(index)
+      );
+
+      const image = create(
+        "img",
+        "gallery-thumbnail-image"
+      );
+
+      image.src = item.image;
+      image.alt = "";
+      image.loading = "lazy";
+      image.decoding = "async";
+
+      button.appendChild(image);
+
+      thumbnails.appendChild(button);
+
+      return button;
+
+    }
+  );
+
+  // Image navigation
+
+  function showImage(index) {
+
+    if (activeGallery?.closing) return;
+
+    currentIndex =
+      (index + items.length) % items.length;
+
+    const item = items[currentIndex];
+
+    const request = ++imageRequest;
+
+    imageFrame.querySelectorAll(
+      ".gallery-main-image"
+    ).forEach(image => image.remove());
+
+    imageStatus.textContent =
+      galleryLabel("loading");
+
+    imageStatus.hidden = false;
+
+    const image = create(
+      "img",
+      "gallery-main-image"
+    );
+
+    image.alt = text(
+      item.title,
+      `${text(project.title)} — ${galleryLabel("image")} ${currentIndex + 1}`
+    );
+
+    image.decoding = "async";
+    image.draggable = false;
+
+    image.onload = () => {
+
+      if (
+        request !== imageRequest ||
+        !dialog.open
+      ) return;
+
+      imageStatus.hidden = true;
+
+      imageFrame.appendChild(image);
+
+      requestAnimationFrame(() => {
+
+        image.classList.add("is-loaded");
+
+      });
+
+    };
+
+    image.onerror = () => {
+
+      if (
+        request !== imageRequest ||
+        !dialog.open
+      ) return;
+
+      imageStatus.textContent =
+        galleryLabel("error");
+
+      imageStatus.hidden = false;
+
+    };
+
+    image.src = item.image;
+
+    captionTitle.textContent =
+      text(item.title);
+
+    captionDescription.textContent =
+      text(item.description);
+
+    captionTitle.hidden =
+      !text(item.title);
+
+    captionDescription.hidden =
+      !text(item.description);
+
+    counter.textContent =
+      `${formatIndex(currentIndex)} / ${String(items.length).padStart(2, "0")}`;
+
+    thumbnailButtons.forEach(
+      (button, buttonIndex) => {
+
+        const selected =
+          buttonIndex === currentIndex;
+
+        button.classList.toggle(
+          "is-active",
+          selected
+        );
+
+        button.setAttribute(
+          "aria-pressed",
+          String(selected)
+        );
+
+      }
+    );
+
+    const selectedThumbnail =
+      thumbnailButtons[currentIndex];
+
+    if (selectedThumbnail) {
+
+      const offset =
+        selectedThumbnail.offsetLeft -
+        thumbnails.offsetLeft -
+        (thumbnails.clientWidth -
+          selectedThumbnail.offsetWidth) / 2;
+
+      thumbnails.scrollTo({
+        left: offset,
+        behavior: reducedMotion.matches
+          ? "auto"
+          : "smooth"
+      });
+
+    }
+
+  }
+
+  // Keyboard navigation
+
+  dialog.addEventListener(
+    "keydown",
+    event => {
+
+      if (event.key === "ArrowLeft") {
+
+        event.preventDefault();
+        showImage(currentIndex - 1);
+
+      }
+
+      if (event.key === "ArrowRight") {
+
+        event.preventDefault();
+        showImage(currentIndex + 1);
+
+      }
+
+    }
+  );
+
+  dialog.addEventListener(
+    "cancel",
+    event => {
+
+      event.preventDefault();
+      closeProjectGallery();
+
+    }
+  );
+
+  // Close when clicking outside
+
+  dialog.addEventListener(
+    "click",
+    event => {
+
+      if (event.target === dialog) {
+
+        closeProjectGallery();
+
+      }
+
+    }
+  );
+
+  // Mobile swipe
+
+  stage.addEventListener(
+    "pointerdown",
+    event => {
+
+      if (
+        event.pointerType === "mouse" ||
+        event.target.closest("button")
+      ) return;
+
+      pointerStart = {
+        x: event.clientX,
+        y: event.clientY
+      };
+
+    }
+  );
+
+  stage.addEventListener(
+    "pointerup",
+    event => {
+
+      if (!pointerStart) return;
+
+      const dx =
+        event.clientX - pointerStart.x;
+
+      const dy =
+        event.clientY - pointerStart.y;
+
+      pointerStart = null;
+
+      if (
+        Math.abs(dx) > 50 &&
+        Math.abs(dx) > Math.abs(dy) * 1.5
+      ) {
+
+        showImage(
+          currentIndex + (dx < 0 ? 1 : -1)
+        );
+
+      }
+
+    }
+  );
+
+  stage.addEventListener(
+    "pointercancel",
+    () => {
+
+      pointerStart = null;
+
+    }
+  );
+
+  // Assemble lightbox
+
+  if (items.length === 1) {
+
+    previousButton.hidden = true;
+    nextButton.hidden = true;
+    thumbnails.hidden = true;
+
+  }
+
+  panel.append(
+    header,
+    stage,
+    caption,
+    thumbnails
+  );
+
+  dialog.appendChild(panel);
+
+  document.body.appendChild(dialog);
+
+  activeGallery = {
+    dialog,
+    trigger,
+    closing: false,
+    previousOverflow: document.body.style.overflow
+  };
+
+  document.body.style.overflow = "hidden";
+
+  try {
+
+    dialog.showModal();
+
+  } catch (error) {
+
+    closeProjectGallery(true);
+
+    console.warn("Project gallery:", error);
+
+    return;
+
+  }
+
+  showImage(0);
+
+  requestAnimationFrame(() => {
+
+    if (!activeGallery?.closing) {
+
+      dialog.classList.add("is-open");
+
+    }
+
+  });
+
+  closeButton.focus({
+    preventScroll: true
+  });
+
+}
+
+// Cover overlay
+
+function attachProjectGallery(visual, project) {
+
+  const items = getProjectGallery(project);
+
+  if (!items.length) return;
+
+  visual.classList.add("has-gallery");
+
+  const overlay = create(
+    "button",
+    "work-gallery-overlay"
+  );
+
+  overlay.type = "button";
+
+  overlay.setAttribute(
+    "aria-label",
+    `${galleryLabel("viewGallery")} — ${text(project.title)}`
+  );
+
+  overlay.setAttribute(
+    "aria-haspopup",
+    "dialog"
+  );
+
+  const content = create(
+    "span",
+    "work-gallery-content"
+  );
+
+  const icon = create(
+    "span",
+    "work-gallery-icon",
+    "⊞"
+  );
+
+  icon.setAttribute("aria-hidden", "true");
+
+  const label = create(
+    "span",
+    "work-gallery-label",
+    galleryLabel("viewGallery")
+  );
+
+  const count = create(
+    "span",
+    "work-gallery-count",
+    `${items.length} ${galleryLabel("images")}`
+  );
+
+  content.append(
+    icon,
+    label,
+    count
+  );
+
+  overlay.appendChild(content);
+
+  overlay.addEventListener(
+    "click",
+    () => openProjectGallery(
+      project,
+      overlay
+    )
+  );
+
+  visual.appendChild(overlay);
+
+}
+
+// ==================================================
+// END PROJECT GALLERY ENGINE
+// ==================================================
 
   /* ==================================================
      08. PROJECT IMAGE COMPONENT
@@ -714,7 +1377,9 @@
 
     }
 
-    return visual;
+   attachProjectGallery(visual, project);
+     
+   return visual;
 
   }
 
@@ -2901,7 +3566,7 @@ function getLocalizedContent(data) {
       "Tìm hiểu về tôi"
   );
 
-  localized.projects = mergeTranslatedRecords(
+    localized.projects = mergeTranslatedRecords(
     data.projects,
     vi.projects,
     [
@@ -2912,7 +3577,30 @@ function getLocalizedContent(data) {
       "role",
       "results"
     ]
-  );
+  ).map(project => {
+
+    const translatedProject = array(
+      vi.projects
+    ).find(
+      item => item.id === project.id
+    );
+
+    return {
+
+      ...project,
+
+      gallery: mergeTranslatedRecords(
+        project.gallery,
+        translatedProject?.gallery,
+        [
+          "title",
+          "description"
+        ]
+      )
+
+    };
+
+  });
 
   localized.workExperience = mergeTranslatedRecords(
     data.workExperience,
@@ -3093,6 +3781,8 @@ function setLanguage(language) {
 
   if (language === currentLanguage) return;
 
+  closeProjectGallery(true);
+
   currentLanguage = language;
 
   try {
@@ -3104,7 +3794,10 @@ function setLanguage(language) {
 
   } catch (error) {
 
-    console.warn("Language preference:", error);
+    console.warn(
+      "Language preference:",
+      error
+    );
 
   }
 
@@ -3115,7 +3808,6 @@ function setLanguage(language) {
   initActiveNavigation();
 
 }
-
 
 // Initialize language controls
 
