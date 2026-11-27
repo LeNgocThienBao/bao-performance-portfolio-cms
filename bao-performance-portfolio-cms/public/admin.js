@@ -2566,13 +2566,16 @@ function renderProjectGallery(project) {
 
     select.addEventListener("change", () => {
 
-      if (isBusy()) return;
+  if (isBusy()) {
+    select.value = item.platform || "tiktok";
+    return;
+  }
 
-      item.platform = select.value;
+  item.platform = select.value;
 
-      markDirty();
+  markDirty();
 
-    });
+});
 
     wrap.append(label, select);
 
@@ -4163,7 +4166,7 @@ project.gallery.forEach((item, mediaIndex) => {
 
   }
 
-  if ((item.description || "").length > 1000) {
+    if ((item.description || "").length > 1000) {
 
     throw new Error(
       `${label}: Mô tả vượt quá 1000 ký tự.`
@@ -4173,8 +4176,12 @@ project.gallery.forEach((item, mediaIndex) => {
 
 });
 
-  });
+    validateURL(
+      project.link,
+      `Project ${index + 1}`
+    );
 
+  });
   for (const [key, fieldName, label] of [
     ["workExperience", "company", "Company"],
     ["education", "school", "School"],
