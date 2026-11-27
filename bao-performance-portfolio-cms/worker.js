@@ -302,6 +302,94 @@ async function validateMedia(value, env, kind = "image") {
 
 const MAX_PROJECT_GALLERY = 20;
 
+function sanitizeVideoUrl(value, platform) {
+  const raw = cleanText(value, 2000);
+
+  let url;
+
+  try {
+    url = new URL(raw);
+  } catch {
+    throw new Error("URL video không hợp lệ.");
+  }
+
+  if (
+    url.protocol !== "https:" ||
+    url.username ||
+    url.password ||
+    url.port
+  ) {
+    throw new Error("URL video phải sử dụng HTTPS hợp lệ.");
+  }
+
+  const host = url.hostname.toLowerCase();
+  const path = url.pathname;
+
+  let valid = false;
+
+  switch (platform) {
+    case "tiktok":
+      valid =
+        ["www.tiktok.com", "tiktok.com"].includes(host) &&
+        /^\/@[^/]+\/video\/\d+\/?$/.test(path);
+      break;
+
+    case "youtube":
+      valid =
+        (
+          ["www.youtube.com", "youtube.com", "m.youtube.com"]
+            .includes(host) &&
+          (
+            (
+              path === "/watch" &&
+              /^[a-zA-Z0-9_-]{11}$/.test(
+                url.searchParams.get("v") || ""
+              )
+            ) ||
+            /^\/shorts\/[a-zA-Z0-9_-]{11}\/?$/.test(path)
+          )
+        ) ||
+        (
+          host === "youtu.be" &&
+          /^\/[a-zA-Z0-9_-]{11}\/?$/.test(path)
+        );
+      break;
+
+    case "facebook":
+      valid = [
+        "facebook.com",
+        "www.facebook.com",
+        "m.facebook.com",
+        "fb.watch"
+      ].includes(host) && path !== "/";
+      break;
+
+    case "instagram":
+      valid =
+        ["instagram.com", "www.instagram.com"].includes(host) &&
+        /^\/(reel|p|tv)\/[a-zA-Z0-9_-]+\/?$/.test(path);
+      break;
+
+    case "vimeo":
+      valid =
+        ["vimeo.com", "www.vimeo.com"].includes(host) &&
+        /^\/\d+\/?$/.test(path);
+      break;
+
+    case "mp4":
+      valid = /\.mp4$/i.test(path);
+      break;
+  }
+
+  if (!valid) {
+    throw new Error(
+      "URL video không phù hợp với nền tảng đã chọn."
+    );
+  }
+
+  return url.href;
+}
+
 async function sanitizeProjectGallery(
   value,
   env,
@@ -314,7 +402,7 @@ async function sanitizeProjectGallery(
 
   if (value.length > MAX_PROJECT_GALLERY) {
     throw new Error(
-      "Mỗi dự án chỉ hỗ trợ tối đa 20 ảnh."
+      "Mỗi dự án chỉ hỗ trợ tối đa 20 media."
     );
   }
 
@@ -325,6 +413,15 @@ async function sanitizeProjectGallery(
     previous.map(item => [item.id, item])
   );
 
+  const supportedPlatforms = new Set([
+    "tiktok",
+    "youtube",
+    "facebook",
+    "instagram",
+    "vimeo",
+    "mp4"
+  ]);
+
   for (const item of value) {
 
     if (
@@ -332,7 +429,7 @@ async function sanitizeProjectGallery(
       typeof item !== "object" ||
       Array.isArray(item)
     ) {
-      throw new Error("Dữ liệu ảnh không hợp lệ.");
+      throw new Error("Dữ liệu media không hợp lệ.");
     }
 
     const id =
@@ -340,26 +437,37 @@ async function sanitizeProjectGallery(
       crypto.randomUUID();
 
     if (ids.has(id)) {
-      throw new Error("ID ảnh Gallery bị trùng.");
+      throw new Error("ID media Gallery bị trùng.");
     }
 
     ids.add(id);
 
     const oldItem = previousItems.get(id);
 
-    const image = cleanText(
-      item.image,
-      500
-    );
+    const type = Object.hasOwn(item, "type")
+      ? item.type
+      : oldItem?.type || "image";
+
+    if (!["image", "video"].includes(type)) {
+      throw new Error("Loại media không hợp lệ.");
+    }
+
+    const image = cleanText(item.image, 500);
 
     if (!image) {
-      throw new Error("Ảnh Gallery không được để trống.");
+      throw new Error(
+        type === "video"
+          ? "Video phải có ảnh thumbnail."
+          : "Ảnh Gallery không được để trống."
+      );
     }
 
     const key = mediaKey(image);
 
     if (!key || key.endsWith(".pdf")) {
-      throw new Error("Đường dẫn ảnh Gallery không hợp lệ.");
+      throw new Error(
+        "Đường dẫn ảnh Gallery không hợp lệ."
+      );
     }
 
     const validatedImage =
@@ -367,19 +475,44 @@ async function sanitizeProjectGallery(
         ? image
         : await validateMedia(image, env, "image");
 
-    gallery.push({
+    const record = {
       id,
+      type,
       image: validatedImage,
       title: cleanText(item.title, 180),
       description: cleanText(item.description, 1000)
-    });
+    };
+
+    if (type === "video") {
+
+      const platform = cleanText(
+        item.platform ?? oldItem?.platform,
+        30
+      ).toLowerCase();
+
+      if (!supportedPlatforms.has(platform)) {
+        throw new Error(
+          "Nền tảng video không được hỗ trợ."
+        );
+      }
+
+      const videoUrl = sanitizeVideoUrl(
+        item.videoUrl ?? oldItem?.videoUrl,
+        platform
+      );
+
+      record.platform = platform;
+      record.videoUrl = videoUrl;
+
+    }
+
+    gallery.push(record);
 
   }
 
   return gallery;
 
 }
-
 // END PROJECT GALLERY
 // ==================================================
 
